@@ -98,7 +98,7 @@ def screening_all_freqs_orig(coords, alpha_0, C6, R_vdw, beta, lattice=None, nfr
     return alpha_dyn_rsscs, C6_rsscs, R_vdw_rsscs
 
 # this is the same function as in pymbd -> md_energy(), only with additional output
-def mbd_energy_get_matrix(coords, alpha_0, C6, R_vdw, beta, aniso = False, lattice=None, k_grid=None, nfreq=30):
+def mbd_energy_get_matrix(coords, alpha_0, C6, R_vdw, beta, lattice=None, k_grid=None, nfreq=30):
     r"""Calculate an MBD energy.
 
     :param array-like coords: (a.u.) atom coordinates in rows
@@ -118,14 +118,7 @@ def mbd_energy_get_matrix(coords, alpha_0, C6, R_vdw, beta, aniso = False, latti
     )
     omega_rsscs = 4 / 3 * C6_rsscs / alpha_0_rsscs**2
     
-    if aniso:
-        alphambd,alphaxyz, alphafreq, freq, freq_w, omega_contrnew = screening_all_freqs(
-          coords, alpha_0, C6, R_vdw, beta, lattice=None, nfreq=30)
-        pre=np.array(omega_contrnew*np.sqrt(alphaxyz))
-        pre=np.reshape(pre.T,-1) #3*N)
-
-    else:
-       pre = np.repeat(omega_rsscs * np.sqrt(alpha_0_rsscs), 3)
+    pre = np.repeat(omega_rsscs * np.sqrt(alpha_0_rsscs), 3)
 
     if lattice is None:
         k_points = [None]
@@ -135,10 +128,7 @@ def mbd_energy_get_matrix(coords, alpha_0, C6, R_vdw, beta, aniso = False, latti
         matrix_list = []
     ene = 0.0
     for k_point in k_points:
-        if aniso == False:
-          matrix = np.diag(np.repeat(omega_rsscs**2, 3))
-        else:
-          matrix = np.diag(np.reshape(omega_contrnew.T,-1)**2)    
+        matrix = np.diag(np.repeat(omega_rsscs**2, 3))
 
         dipole_matrix_mbd = dipole_matrix(
                 coords,
@@ -160,10 +150,7 @@ def mbd_energy_get_matrix(coords, alpha_0, C6, R_vdw, beta, aniso = False, latti
 
         
         ene += np.sum(np.sqrt(eigs)) / 2
-    if aniso == False:
-       ene = ene / len(k_points) - 3 * np.sum(omega_rsscs) / 2
-    else:
-       ene = ene / len(k_points) - np.sum(omega_contrnew) / 2
+    ene = ene / len(k_points) - 3 * np.sum(omega_rsscs) / 2
 
     if len(k_points) > 1:
         return ene, alpha_0_rsscs, omega_rsscs, matrix_list, dipole_matrix_mbd
