@@ -1,0 +1,172 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+from __future__ import division, print_function
+
+import csv
+import sys
+from itertools import product
+
+import numpy as np
+from numpy.polynomial.legendre import leggauss
+from pkg_resources import resource_string
+from scipy.special import erf, erfc
+
+from pymbd.pymbd import freq_grid, dipole_matrix, _array, screening, get_kpts
+
+#
+# Adapted screening function from pymbd
+# (https://github.com/libmbd/libmbd/tree/master/src/pymbd)
+#
+
+def screening_all_freqs(coords, alpha_0, C6, R_vdw, beta, lattice=None, nfreq=30):
+    r"""Screen atomic polarizabilities.
+
+    :param array-like coords: (a.u.) atom coordinates in rows
+    :param array-like alpha_0: (a.u.) atomic polarizabilities
+    :param array-like C6: (a.u.) atomic :math:`C_6` coefficients
+    :param array-like R_vdw: (a.u.) atomic vdW radii
+    :param float beta: MBD damping parameter :math:`\beta`
+    :param array-like lattice: (a.u.) lattice vectors in rows
+    :param int nfreq: number of grid points for frequency quadrature
+
+    Returns static polarizabilities, :math:`C_6` coefficients, and
+    :math:`R_\mathrm{vdw}` coefficients (a.u.).
+    """
+    freq, freq_w = freq_grid(nfreq)
+    omega = 4 / 3 * C6 / alpha_0**2
+    alpha_dyn = [alpha_0 / (1 + (u / omega) ** 2) for u in freq]
+    alpha_dyn_rsscs = []
+    alphanewr = []
+    for a in alpha_dyn:
+        sigma = (np.sqrt(2 / np.pi) * a / 3) ** (1 / 3)
+        dipmat = dipole_matrix(
+            coords, 'fermi,dip,gg', sigma=sigma, R_vdw=R_vdw, beta=beta, lattice=lattice
+        ) #fermi,dip,gg
+        a_nlc = np.linalg.inv(np.diag(np.repeat(1 / a, 3)) + dipmat)
+        a_contr = sum(np.sum(a_nlc[i::3, i::3], 1) for i in range(3))/3
+        a1=np.sum(a_nlc[0::3, 0::3], 1)
+        a2=np.sum(a_nlc[1::3, 1::3], 1)
+        a3=np.sum(a_nlc[2::3, 2::3], 1)
+        a_contrnew = np.array([a1,a2,a3])
+        alphanewr.append(a_contrnew)
+        alpha_dyn_rsscs.append(a_contr)
+    alphanewr=np.stack(alphanewr)
+    alpha_dyn_rsscs = np.stack(alpha_dyn_rsscs)
+    C6_rsscs = 3 / np.pi * np.sum(freq_w[:, None] * alpha_dyn_rsscs**2, 0)
+    R_vdw_rsscs = R_vdw * np.sign(alpha_dyn_rsscs[0, :] / alpha_0)*np.abs(alpha_dyn_rsscs[0, :] / alpha_0)** (1 / 3)
+    C6_rsscsnewr_a1 = 3 / np.pi * np.sum(freq_w[:, None] * alphanewr[:,0,:]**2, 0)
+    C6_rsscsnewr_a2 = 3 / np.pi * np.sum(freq_w[:, None] * alphanewr[:,1,:]**2, 0)
+    C6_rsscsnewr_a3 = 3 / np.pi * np.sum(freq_w[:, None] * alphanewr[:,2,:]**2, 0)
+    C6_contrnew = np.array([C6_rsscsnewr_a1,C6_rsscsnewr_a2,C6_rsscsnewr_a3])
+    omega_rsscs_a1 = 4 / 3 * C6_rsscsnewr_a1 / alphanewr[0,0,:]**2
+    omega_rsscs_a2 = 4 / 3 * C6_rsscsnewr_a2 / alphanewr[0,1,:]**2
+    omega_rsscs_a3 = 4 / 3 * C6_rsscsnewr_a3 / alphanewr[0,2,:]**2
+    omega_contrnew = np.array([omega_rsscs_a1, omega_rsscs_a2, omega_rsscs_a3])
+    return alpha_dyn_rsscs,alphanewr[0],alphanewr,freq,freq_w, omega_contrnew
+
+# this is the same function as in pymbd -> md_energy(), only with output of all frequencies
+def screening_all_freqs_orig(coords, alpha_0, C6, R_vdw, beta, lattice=None, nfreq=15):
+    r"""Screen atomic polarizabilities.
+
+    :param array-like coords: (a.u.) atom coordinates in rows
+    :param array-like alpha_0: (a.u.) atomic polarizabilities
+    :param array-like C6: (a.u.) atomic :math:`C_6` coefficients
+    :param array-like R_vdw: (a.u.) atomic vdW radii
+    :param float beta: MBD damping parameter :math:`\beta`
+    :param array-like lattice: (a.u.) lattice vectors in rows
+    :param int nfreq: number of grid points for frequency quadrature
+
+    Returns static polarizabilities, :math:`C_6` coefficients, and
+    :math:`R_\mathrm{vdw}` coefficients (a.u.).
+    """
+    freq, freq_w = freq_grid(nfreq)
+    omega = 4 / 3 * C6 / alpha_0**2
+    alpha_dyn = [alpha_0 / (1 + (u / omega) ** 2) for u in freq]
+    alpha_dyn_rsscs = []
+    for a in alpha_dyn:
+        sigma = (np.sqrt(2 / np.pi) * a / 3) ** (1 / 3)
+        dipmat = dipole_matrix(
+            coords, 'fermi,dip,gg', sigma=sigma, R_vdw=R_vdw, beta=beta, lattice=lattice
+        )
+        a_nlc = np.linalg.inv(np.diag(np.repeat(1 / a, 3)) + dipmat)
+        a_contr = sum(np.sum(a_nlc[i::3, i::3], 1) for i in range(3)) / 3
+        alpha_dyn_rsscs.append(a_contr)
+    alpha_dyn_rsscs = np.stack(alpha_dyn_rsscs)
+    C6_rsscs = 3 / np.pi * np.sum(freq_w[:, None] * alpha_dyn_rsscs**2, 0)
+    R_vdw_rsscs = R_vdw * (alpha_dyn_rsscs[0, :] / alpha_0) ** (1 / 3)
+    return alpha_dyn_rsscs, C6_rsscs, R_vdw_rsscs
+
+# this is the same function as in pymbd -> md_energy(), only with additional output
+def mbd_energy_get_matrix(coords, alpha_0, C6, R_vdw, beta, aniso = False, lattice=None, k_grid=None, nfreq=30):
+    r"""Calculate an MBD energy.
+
+    :param array-like coords: (a.u.) atom coordinates in rows
+    :param array-like alpha_0: (a.u.) atomic polarizabilities
+    :param array-like C6: (a.u.) atomic :math:`C_6` coefficients
+    :param array-like R_vdw: (a.u.) atomic vdW radii
+    :param float beta: MBD damping parameter :math:`\beta`
+    :param array-like lattice: (a.u.) lattice vectors in rows
+    :param array-like k_grid: number of :math:`k`-points along reciprocal axes
+    :param int nfreq: number of grid points for frequency quadrature
+    """
+    coords, alpha_0, C6, R_vdw, lattice = map(
+        _array, (coords, alpha_0, C6, R_vdw, lattice)
+    )
+    alpha_0_rsscs, C6_rsscs, R_vdw_rsscs = screening(
+        coords, alpha_0, C6, R_vdw, beta, lattice=lattice, nfreq=30
+    )
+    omega_rsscs = 4 / 3 * C6_rsscs / alpha_0_rsscs**2
+    
+    if aniso:
+        alphambd,alphaxyz, alphafreq, freq, freq_w, omega_contrnew = screening_all_freqs(
+          coords, alpha_0, C6, R_vdw, beta, lattice=None, nfreq=30)
+        pre=np.array(omega_contrnew*np.sqrt(alphaxyz))
+        pre=np.reshape(pre.T,-1) #3*N)
+
+    else:
+       pre = np.repeat(omega_rsscs * np.sqrt(alpha_0_rsscs), 3)
+
+    if lattice is None:
+        k_points = [None]
+    else:
+        assert k_grid is not None
+        k_points = get_kpts(lattice, k_grid)
+        matrix_list = []
+    ene = 0.0
+    for k_point in k_points:
+        if aniso == False:
+          matrix = np.diag(np.repeat(omega_rsscs**2, 3))
+        else:
+          matrix = np.diag(np.reshape(omega_contrnew.T,-1)**2)    
+
+        dipole_matrix_mbd = dipole_matrix(
+                coords,
+                'fermi,dip',
+                R_vdw=R_vdw_rsscs,
+                beta=beta,
+                lattice=lattice,
+                k_point=k_point,
+            )
+
+        matrix = np.diag(np.repeat(omega_rsscs**2, 3)) + np.outer(pre, pre) \
+            * dipole_matrix_mbd
+        
+        if len(k_points) > 1:
+            matrix_list.append(matrix)
+
+        # eigs = np.linalg.eigvalsh(matrix)
+        eigs, eigvecs = np.linalg.eigh(matrix)
+
+        
+        ene += np.sum(np.sqrt(eigs)) / 2
+    if aniso == False:
+       ene = ene / len(k_points) - 3 * np.sum(omega_rsscs) / 2
+    else:
+       ene = ene / len(k_points) - np.sum(omega_contrnew) / 2
+
+    if len(k_points) > 1:
+        return ene, alpha_0_rsscs, omega_rsscs, matrix_list, dipole_matrix_mbd
+        
+    return ene, alpha_0_rsscs, omega_rsscs, matrix, dipole_matrix_mbd
+
