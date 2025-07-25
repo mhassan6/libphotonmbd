@@ -124,7 +124,7 @@ def mbd_energy_get_matrix(coords, alpha_0, C6, R_vdw, beta, lattice=None, k_grid
         k_points = [None]
     else:
         assert k_grid is not None
-        k_points = get_kpts(lattice, k_grid)
+        k_points = get_kpts(lattice, k_grid, shift = 0)
         matrix_list = []
     ene = 0.0
     for k_point in k_points:

@@ -141,6 +141,16 @@ def diagonalize_pmbdmatrix_gamma(matrix, om):
   evals = abs(eigvalada)
   return evals, 0*gamma[:,nmodes].T, 0*gamma[:,nmodes].T
 
+def get_omegas(omega_rsscs, ptomega, natm, ptnmodes):
+    #create omegas array for photon number
+    omegas = np.zeros((3*natm + ptnmodes,))
+    count = 0
+    for ii in range(0, natm):
+      for xx in range(0,3):
+          omegas[count] = omega_rsscs[ii]
+          count += 1
+    omegas[-1] = ptomega
+    return omegas
 
 
 def calc_ptobservables(omegas, phi1, psi1):
@@ -160,7 +170,7 @@ def calc_ptobservables(omegas, phi1, psi1):
     adadaambd=(Y.T@ X)[-1,-1]*(X.T @ Y)[-1,-1]+2*(Y.T @ Y)[-1,-1]**2 #+(Y.T @ Y)[-1,-1]* (Y @ Y)[-1,-1]
     return ptnumber_matrix[-1,-1], adadaambd, X, Y
 
-def get_AT_matrix(dipole_matrix, coords, alpha_0, C6, R_vdw, beta, pt = None):
+def get_AT_matrix(coords, alpha_0, C6, R_vdw, beta, pt = None, lattice = None, k_point = None):
     #see https://github.com/libmbd/libmbd/blob/master/src/mbd_rpa.F90
     nfreq = 30
     natm = alpha_0.shape[0]
@@ -172,6 +182,15 @@ def get_AT_matrix(dipole_matrix, coords, alpha_0, C6, R_vdw, beta, pt = None):
     alpha_0_rsscs, C6_rsscs, R_vdw_rsscs = screening_all_freqs_orig(
         coords, alpha_0, C6, R_vdw, beta, nfreq=nfreq
     )
+
+    dipole_matrix_mbd = dipole_matrix(
+                coords,
+                'fermi,dip',
+                R_vdw=R_vdw_rsscs,
+                beta=beta,
+                lattice=lattice,
+                k_point=k_point,
+            )
     energy = 0
 
     for ifreq in range(1, nfreq + 1):
@@ -179,7 +198,7 @@ def get_AT_matrix(dipole_matrix, coords, alpha_0, C6, R_vdw, beta, pt = None):
       #AT = np.diag(np.repeat(-alpha_0_rsscs[ifreq], 3)) @ dipole_matrix
 
       #this seems to be what is actually implemented in mbd_rpa (see above)
-      AT = np.zeros((3*natm, 3*natm))
+      AT = np.zeros((3*natm, 3*natm), dtype = complex)
       for ii in range(0, natm):
         for xx in range(0, 3):
           for jj in range(0, natm):
@@ -188,7 +207,7 @@ def get_AT_matrix(dipole_matrix, coords, alpha_0, C6, R_vdw, beta, pt = None):
               if pt is not None:
                 res = pt.lam**2*pt.pol_vec[xx]*pt.pol_vec[yy]*freq[ifreq]**2/(freq[ifreq]**2 + pt.omega**2)
               AT[3*ii+xx,3*jj+yy] = np.sqrt(alpha_0_rsscs[ifreq, ii]*alpha_0_rsscs[ifreq, jj]) \
-                  *(dipole_matrix[3*ii+xx,3*jj+yy] + res)
+                  *(dipole_matrix_mbd[3*ii+xx,3*jj+yy] + res)
 
       eigs = np.linalg.eigvalsh(AT)
       log_eigs = np.log(1. + eigs)
@@ -203,28 +222,26 @@ def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', l
 
     natm = len(elements)
     alpha_0, C6, R_vdw = from_volumes(elements, ratio)
-     
-    ene, alpha_0_rsscs, omega_rsscs, matrix, dipole_matrix = mbd_energy_get_matrix(coords, alpha_0, C6, R_vdw, \
-                                                                beta=beta, lattice=lattice, k_grid=k_grid)
+   
+
     if lattice is None:
         k_points = [None]
     else:
         assert k_grid is not None
-        k_points = get_kpts(lattice, k_grid)
+        k_points = get_kpts(lattice, k_grid, shift = 0)
         print('k_points: ', k_points)
         print('len k_points: ', len(k_points))
+ 
+    ene, alpha_0_rsscs, omega_rsscs, matrix, dipole_matrix = mbd_energy_get_matrix(coords, alpha_0, C6, R_vdw, \
+                                                                beta=beta, lattice=lattice, k_grid=k_grid)
+
+    AT_energy, rpa_orders = get_AT_matrix(coords, alpha_0, C6, R_vdw, beta=beta, lattice=lattice, k_point=k_points[0])
+    print('ene', ene, 'AT ene', AT_energy, 'ratio', ene/AT_energy)
+    print('log AT ene', AT_energy, 'rpa_order', np.sum(rpa_orders))
 
     mbdmatrix = get_pt_mbdmatrix(natm, pt, matrix, alpha_0_rsscs, omega_rsscs, gauge)
 
-    #create omegas array for photon number
-    omegas = np.zeros((3*natm + pt.nmodes,))
-    count = 0
-    for ii in range(0, natm):
-      for xx in range(0,3):
-          omegas[count] = omega_rsscs[ii]
-          count += 1
-    omegas[-1] = pt.omega   
-
+    omegas = get_omegas(omega_rsscs, pt.omega, natm, pt.nmodes)
     if gauge == 'length': 
       eigs, eigvecs = np.linalg.eigh(mbdmatrix)
       #print('eigs',np.sqrt(eigs))
@@ -243,9 +260,9 @@ def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', l
     pt.exc = pt.exc / len(k_points) -3*np.sum(omega_rsscs) / 2 - pt.omega / 2
     pt.number, pt.adadaa, pt.X, pt.Y = calc_ptobservables(omegas, phi1, psi1)
 
-    AT_energy, rpa_orders = get_AT_matrix(dipole_matrix, coords, alpha_0, C6, R_vdw, beta=beta, pt = pt)
-    #print('ene', pt.exc, 'AT ene', AT_energy, 'ratio', pt.exc/AT_energy)
-    #print('log AT ene', AT_energy, 'rpa_order', np.sum(rpa_orders))
+    AT_energy, rpa_orders = get_AT_matrix(coords, alpha_0, C6, R_vdw, beta = beta, pt = pt, lattice=lattice, k_point=k_points[0])
+    print('ene', pt.exc, 'AT ene', AT_energy, 'ratio', pt.exc/AT_energy)
+    print('log AT ene', AT_energy, 'rpa_order', np.sum(rpa_orders))
  
     return ene
 
