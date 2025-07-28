@@ -12,8 +12,9 @@ def pypmbd_parse_json(filename, pt, gauge):
    with open(json_file, "r") as f:
      data = json.load(f)
 
-   xc_fun = 'pbe'
-   print(f'functional: {xc_fun} mbd_beta: {DEFAULT_RSSCS_BETA[xc_fun]}')
+   code = data['code']
+   xc_fun = data['xc']
+   print(f'code: {code} functional: {xc_fun} mbd_beta: {DEFAULT_RSSCS_BETA[xc_fun]}')
 
    atomic_positions = P_Ang*np.array(data['atomic_positions']) #Fix to a.u.
    atomic_species = data['atomic_species'] #Fix to array
@@ -27,7 +28,9 @@ def pypmbd_parse_json(filename, pt, gauge):
    kpoints = data['kpoints']
    if kpoints == 0:
       kpoints = None
-   E0 = data['total_energy'] # if using VASP
+   E0 = data['total_energy']
+   if code == 'vasp':
+     E0 = E0/P_Har
    xc_fun = data['xc']
 
    ratio = data['ratio'] # if using VASP
@@ -40,6 +43,7 @@ def pypmbd_parse_json(filename, pt, gauge):
     
    output_array = xc_pmbd(atomic_positions, atomic_species, ratio, pt, beta = DEFAULT_RSSCS_BETA[xc_fun], gauge = gauge, lattice=lattice, k_grid=kpoints)
    output_array.update({'E0': E0})
+   output_array.update({'json': data})
    return output_array
 
 

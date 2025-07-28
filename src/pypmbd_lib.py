@@ -174,13 +174,13 @@ def get_AT_matrix(coords, alpha_0, C6, R_vdw, beta, pt = None, lattice = None, k
     #see https://github.com/libmbd/libmbd/blob/master/src/mbd_rpa.F90
     nfreq = 30
     natm = alpha_0.shape[0]
-    rpa_order_max = 10
+    rpa_order_max = 50
     rpa_orders = np.zeros(rpa_order_max)
 
     freq, freq_w = freq_grid(nfreq)
 
     alpha_0_rsscs, C6_rsscs, R_vdw_rsscs = screening_all_freqs_orig(
-        coords, alpha_0, C6, R_vdw, beta, nfreq=nfreq
+        coords, alpha_0, C6, R_vdw, beta, lattice = lattice, nfreq=nfreq
     )
 
     dipole_matrix_mbd = dipole_matrix(
