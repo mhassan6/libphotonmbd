@@ -5,36 +5,43 @@ from photon_mode import photon_mode
 from pypmbd_lib import xc_pmbd
 from vdw.modelmbd import DEFAULT_RSSCS_BETA
 
-json_file = '../json/vasp_input_output_supercell6.json'
-#json_file = '../json/vasp_input_output_kpoint12.json'
+def pypmbd_parse_json(filename, pt, gauge):
 
-with open(json_file, "r") as f:
-  data = json.load(f)
+   json_file = filename
 
-xc_fun = 'pbe'
-print(f'functional: {xc_fun} mbd_beta: {DEFAULT_RSSCS_BETA[xc_fun]}')
+   with open(json_file, "r") as f:
+     data = json.load(f)
 
-atomic_positions = P_Ang*np.array(data['atomic_positions']) #Fix to a.u.
-atomic_species = data['atomic_species'] #Fix to array
-natm = len(atomic_positions)
-atomic_species *= natm
-lattice = P_Ang*np.array(data['lattice']) #FIX to a.u.
-kpoints = data['kpoints']
-E0 = data['total_energy']/P_Har # if using VASP
+   xc_fun = 'pbe'
+   print(f'functional: {xc_fun} mbd_beta: {DEFAULT_RSSCS_BETA[xc_fun]}')
 
-ratio = data['ratio'] # if using VASP
+   atomic_positions = P_Ang*np.array(data['atomic_positions']) #Fix to a.u.
+   atomic_species = data['atomic_species'] #Fix to array
+   natm = len(atomic_positions)
+   atomic_species *= natm
+   lattice = data['lattice'] #FIX to a.u.
+   if lattice == 0:
+      lattice = None
+   else:
+      lattice = P_Ang*np.array(lattice)
+   kpoints = data['kpoints']
+   if kpoints == 0:
+      kpoints = None
+   E0 = data['total_energy'] # if using VASP
+   xc_fun = data['xc']
+
+   ratio = data['ratio'] # if using VASP
     
-print('atomic_positions: ', atomic_positions)
-print('atomic_species: ', atomic_species)
-print('lattice: ', lattice)
-print('kpoints: ', kpoints)
-print('Veff/Vfree ratio: ', ratio, '\n\n')
+   print('atomic_positions: ', atomic_positions)
+   print('atomic_species: ', atomic_species)
+   print('lattice: ', lattice)
+   print('kpoints: ', kpoints)
+   print('Veff/Vfree ratio: ', ratio, '\n\n')
     
-pt = photon_mode(1, 2/P_Har, 0.05, [0,0,1])
+   output_array = xc_pmbd(atomic_positions, atomic_species, ratio, pt, beta = DEFAULT_RSSCS_BETA[xc_fun], gauge = gauge, lattice=lattice, k_grid=kpoints)
+   output_array.update({'E0': E0})
+   return output_array
 
-gauge = 'length'
-vdwene_len = xc_pmbd(atomic_positions, atomic_species, ratio, pt, beta = DEFAULT_RSSCS_BETA[xc_fun], gauge = gauge, lattice=lattice, k_grid=kpoints)
-print('Gauge', gauge, 'E0', E0, 'vdwene', vdwene_len, 'vdw+pt', pt.exc, 'pt', pt.exc-vdwene_len)
 
 #gauge = 'velocity'
 #vdwene_len = xc_pmbd(atomic_positions, atomic_species, ratio, pt, beta = DEFAULT_RSSCS_BETA[xc_fun], gauge = gauge, lattice=lattice, k_grid=kpoints)

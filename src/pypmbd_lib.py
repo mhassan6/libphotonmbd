@@ -220,6 +220,7 @@ def get_AT_matrix(coords, alpha_0, C6, R_vdw, beta, pt = None, lattice = None, k
 
 def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', lattice=None, k_grid=None): #gauge = length, velocity
 
+
     natm = len(elements)
     alpha_0, C6, R_vdw = from_volumes(elements, ratio)
    
@@ -236,8 +237,8 @@ def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', l
                                                                 beta=beta, lattice=lattice, k_grid=k_grid)
 
     AT_energy, rpa_orders = get_AT_matrix(coords, alpha_0, C6, R_vdw, beta=beta, lattice=lattice, k_point=k_points[0])
-    print('ene', ene, 'AT ene', AT_energy, 'ratio', ene/AT_energy)
-    print('log AT ene', AT_energy, 'rpa_order', np.sum(rpa_orders))
+    #print('ene', ene, 'AT ene', AT_energy, 'ratio', ene/AT_energy)
+    #print('log AT ene', AT_energy, 'rpa_order', np.sum(rpa_orders))
 
     mbdmatrix = get_pt_mbdmatrix(natm, pt, matrix, alpha_0_rsscs, omega_rsscs, gauge)
 
@@ -260,9 +261,18 @@ def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', l
     pt.exc = pt.exc / len(k_points) -3*np.sum(omega_rsscs) / 2 - pt.omega / 2
     pt.number, pt.adadaa, pt.X, pt.Y = calc_ptobservables(omegas, phi1, psi1)
 
-    AT_energy, rpa_orders = get_AT_matrix(coords, alpha_0, C6, R_vdw, beta = beta, pt = pt, lattice=lattice, k_point=k_points[0])
-    print('ene', pt.exc, 'AT ene', AT_energy, 'ratio', pt.exc/AT_energy)
-    print('log AT ene', AT_energy, 'rpa_order', np.sum(rpa_orders))
- 
-    return ene
+    pt_AT_energy, pt_rpa_orders = get_AT_matrix(coords, alpha_0, C6, R_vdw, beta = beta, pt = pt, lattice=lattice, k_point=k_points[0])
+    #print('ene', pt.exc, 'AT ene', AT_energy, 'ratio', pt.exc/AT_energy)
+    #print('log AT ene', AT_energy, 'rpa_order', np.sum(rpa_orders))
+
+
+    output_array = {
+       'ene' : ene,
+       'AT_energy' : AT_energy,
+       'rpa_orders' : rpa_orders,
+       'pt_AT_energy' : pt_AT_energy,
+       'pt_rpa_orders' : pt_rpa_orders
+    }
+
+    return output_array
 
