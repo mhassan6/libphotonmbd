@@ -5,7 +5,8 @@ from photon_mode import photon_mode
 from pypmbd_lib import xc_pmbd
 from vdw.modelmbd import DEFAULT_RSSCS_BETA
 
-def pypmbd_parse_json(filename, pt, gauge):
+
+def pypmbd_parse_json(filename, pt, gauge, noint = False):
 
    json_file = filename
 
@@ -16,10 +17,11 @@ def pypmbd_parse_json(filename, pt, gauge):
    xc_fun = data['xc']
    print(f'code: {code} functional: {xc_fun} mbd_beta: {DEFAULT_RSSCS_BETA[xc_fun]}')
 
-   atomic_positions = P_Ang*np.array(data['atomic_positions']) #Fix to a.u.
+   atomic_positions = np.array(data['atomic_positions']) #Fix to a.u.
    atomic_species = data['atomic_species'] #Fix to array
    natm = len(atomic_positions)
-   atomic_species *= natm
+   print('natm', natm)
+   #atomic_species *= natm
    lattice = data['lattice'] #FIX to a.u.
    if lattice == 0:
       lattice = None
@@ -39,9 +41,13 @@ def pypmbd_parse_json(filename, pt, gauge):
    print('atomic_species: ', atomic_species)
    print('lattice: ', lattice)
    print('kpoints: ', kpoints)
-   print('Veff/Vfree ratio: ', ratio, '\n\n')
+   print('Veff/Vfree ratio: ', ratio)
+   print('npt modes:', pt.nmodes)
+   print('pt freq:',pt.omega)
+   print('pt lam:', pt.lam,'\n\n')
     
-   output_array = xc_pmbd(atomic_positions, atomic_species, ratio, pt, beta = DEFAULT_RSSCS_BETA[xc_fun], gauge = gauge, lattice=lattice, k_grid=kpoints)
+   output_array = xc_pmbd(atomic_positions, atomic_species, ratio, pt, beta = DEFAULT_RSSCS_BETA[xc_fun], gauge = gauge, \
+      lattice=lattice, k_grid=kpoints, noint = noint)
    output_array.update({'E0': E0})
    output_array.update({'json': data})
    return output_array
