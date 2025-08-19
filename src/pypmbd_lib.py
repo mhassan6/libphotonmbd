@@ -277,7 +277,11 @@ def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', l
        'AT_energy' : AT_energy,
        'rpa_orders' : rpa_orders,
        'pt_AT_energy' : pt_AT_energy,
-       'pt_rpa_orders' : pt_rpa_orders
+       'pt_rpa_orders' : pt_rpa_orders,
+       'pt_number' : pt.number,
+       'pt_adadaa' : pt.adadaa,
+       'pt_X' : pt.X,
+       'pt_Y' : pt.Y
     }
 
     return output_array
