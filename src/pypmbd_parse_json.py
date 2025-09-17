@@ -17,7 +17,7 @@ def pypmbd_parse_json(filename, pt, gauge, noint = False):
    xc_fun = data['xc']
    print(f'code: {code} functional: {xc_fun} mbd_beta: {DEFAULT_RSSCS_BETA[xc_fun]}')
 
-   atomic_positions = P_ang*np.array(data['atomic_positions']) #atomic_positions in a.u. while json in AA
+   atomic_positions = P_Ang*np.array(data['atomic_positions']) #atomic_positions in a.u. while json in AA
    atomic_species = data['atomic_species']
    natm = len(atomic_positions)
    print('natm', natm)
