@@ -1,7 +1,7 @@
 import numpy as np
 from pymbd import from_volumes, mbd_energy
-from pymbd_mod import screening_all_freqs, mbd_energy_get_matrix, screening_all_freqs_orig
-from pymbd.pymbd import freq_grid, dipole_matrix, get_kpts
+from pymbd_mod import screening_all_freqs, mbd_energy_get_matrix #, screening_all_freqs_orig
+from pymbd.pymbd import freq_grid, dipole_matrix, get_kpts, screening
 from scipy.linalg import block_diag
 
 ### finite difference:
@@ -180,26 +180,25 @@ def get_AT_matrix(coords, alpha_0, C6, R_vdw, beta, pt = None, lattice = None, k
 
     freq, freq_w = freq_grid(nfreq)
 
-    alpha_0_rsscs, C6_rsscs, R_vdw_rsscs = screening_all_freqs_orig(
+    alpha_0_rsscs, C6_rsscs, R_vdw_rsscs = screening(
         coords, alpha_0, C6, R_vdw, beta, lattice = lattice, nfreq=nfreq
     )
 
-    dipole_matrix_mbd = dipole_matrix(
+    if not noint:
+       dipole_matrix_mbd = dipole_matrix(
                 coords,
                 'fermi,dip',
                 R_vdw=R_vdw_rsscs,
                 beta=beta,
                 lattice=lattice,
-                k_point=k_point,
-            )
-    if noint:
-       dipole_matrix_mbd *= 0
-       print('noint')
+                k_point=k_point)
+    else:
+       dipole_matrix_mbd = np.zeros((3*natm, 3*natm))
 
     energy = 0.0
 
-    omega = 4 / 3 * C6_rsscs / alpha_0_rsscs[0]**2
-    alpha_dyn = [alpha_0_rsscs[0] / (1 + (u / omega) ** 2) for u in freq]
+    omega = 4 / 3 * C6_rsscs / alpha_0_rsscs**2
+    alpha_dyn = [alpha_0_rsscs / (1 + (u / omega) ** 2) for u in freq]
 
     for ifreq in range(1, nfreq + 1):
       #this is what is in e.g. Bucko et al 2016 J.Phys.:Condens.Matter 28 045201
