@@ -173,7 +173,7 @@ def calc_ptobservables(omegas, phi1, psi1):
 
 def get_AT_matrix(coords, alpha_0, C6, R_vdw, beta, pt = None, lattice = None, k_point = None, noint = False):
     #see https://github.com/libmbd/libmbd/blob/master/src/mbd_rpa.F90
-    nfreq = 30
+    nfreq = 15
     natm = alpha_0.shape[0]
     rpa_order_max = 50
     rpa_orders = np.zeros(rpa_order_max)
@@ -194,15 +194,21 @@ def get_AT_matrix(coords, alpha_0, C6, R_vdw, beta, pt = None, lattice = None, k
             )
     if noint:
        dipole_matrix_mbd *= 0
-       #print('noint')
+       print('noint')
 
-    energy = 0
+    energy = 0.0
+
+    omega = 4 / 3 * C6_rsscs / alpha_0_rsscs[0]**2
+    alpha_dyn = [alpha_0_rsscs[0] / (1 + (u / omega) ** 2) for u in freq]
+
+    # print(f'----------------------------dipole_matrix_mbd-----------------------------\n', dipole_matrix_mbd, f'\n----------------------------End dipole_matrix_mbd-----------------------------\n')
 
     for ifreq in range(1, nfreq + 1):
       #this is what is in e.g. Bucko et al 2016 J.Phys.:Condens.Matter 28 045201
       #AT = np.diag(np.repeat(-alpha_0_rsscs[ifreq], 3)) @ dipole_matrix
 
       #this seems to be what is actually implemented in mbd_rpa (see above)
+      
       AT = np.zeros((3*natm, 3*natm), dtype = complex)
       for ii in range(0, natm):
         for xx in range(0, 3):
@@ -211,12 +217,12 @@ def get_AT_matrix(coords, alpha_0, C6, R_vdw, beta, pt = None, lattice = None, k
               res = 0  
               if pt is not None:
                 res = pt.lam**2*pt.pol_vec[xx]*pt.pol_vec[yy]*freq[ifreq]**2/(freq[ifreq]**2 + pt.omega**2)
-              AT[3*ii+xx,3*jj+yy] = np.sqrt(alpha_0_rsscs[ifreq, ii]*alpha_0_rsscs[ifreq, jj]) \
+              AT[3*ii+xx,3*jj+yy] = np.sqrt(alpha_dyn[ifreq][ii]*alpha_dyn[ifreq][jj]) \
                   *(dipole_matrix_mbd[3*ii+xx,3*jj+yy] + res)
 
       eigs = np.linalg.eigvalsh(AT)
-      log_eigs = np.log(1. + eigs)
-      energy += 1/2/np.pi*np.sum(log_eigs)*freq_w[ifreq] 
+      log_eigs = np.log(1.0 + eigs)
+      energy += (1/2/np.pi)*np.sum(log_eigs)*freq_w[ifreq] 
       
       for irpa in range(1, rpa_order_max):
         rpa_orders[irpa] += -1/2/np.pi*(-1)**irpa*np.sum(eigs**irpa / irpa)*freq_w[ifreq]
