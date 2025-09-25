@@ -201,8 +201,6 @@ def get_AT_matrix(coords, alpha_0, C6, R_vdw, beta, pt = None, lattice = None, k
     omega = 4 / 3 * C6_rsscs / alpha_0_rsscs[0]**2
     alpha_dyn = [alpha_0_rsscs[0] / (1 + (u / omega) ** 2) for u in freq]
 
-    # print(f'----------------------------dipole_matrix_mbd-----------------------------\n', dipole_matrix_mbd, f'\n----------------------------End dipole_matrix_mbd-----------------------------\n')
-
     for ifreq in range(1, nfreq + 1):
       #this is what is in e.g. Bucko et al 2016 J.Phys.:Condens.Matter 28 045201
       #AT = np.diag(np.repeat(-alpha_0_rsscs[ifreq], 3)) @ dipole_matrix
