@@ -98,7 +98,7 @@ def screening_all_freqs_orig(coords, alpha_0, C6, R_vdw, beta, lattice=None, nfr
     return alpha_dyn_rsscs, C6_rsscs, R_vdw_rsscs
 
 # this is the same function as in pymbd -> md_energy(), only with additional output
-def mbd_energy_get_matrix(coords, alpha_0, C6, R_vdw, beta, lattice=None, k_grid=None, nfreq=30, noint = False):
+def mbd_energy_get_matrix(coords, alpha_0, C6, R_vdw, beta, lattice=None, k_grid=None, nfreq=15, noint = False):
     r"""Calculate an MBD energy.
 
     :param array-like coords: (a.u.) atom coordinates in rows
@@ -114,8 +114,9 @@ def mbd_energy_get_matrix(coords, alpha_0, C6, R_vdw, beta, lattice=None, k_grid
         _array, (coords, alpha_0, C6, R_vdw, lattice)
     )
     alpha_0_rsscs, C6_rsscs, R_vdw_rsscs = screening(
-        coords, alpha_0, C6, R_vdw, beta, lattice=lattice, nfreq=30
+        coords, alpha_0, C6, R_vdw, beta, lattice=lattice, nfreq=15
     )
+    print('alpha_0_rsscs: ', alpha_0_rsscs)
     omega_rsscs = 4 / 3 * C6_rsscs / alpha_0_rsscs**2
     
     pre = np.repeat(omega_rsscs * np.sqrt(alpha_0_rsscs), 3)
