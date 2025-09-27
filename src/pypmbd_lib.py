@@ -171,7 +171,7 @@ def calc_ptobservables(omegas, phi1, psi1):
     adadaambd=(Y.T@ X)[-1,-1]*(X.T @ Y)[-1,-1]+2*(Y.T @ Y)[-1,-1]**2 #+(Y.T @ Y)[-1,-1]* (Y @ Y)[-1,-1]
     return ptnumber_matrix[-1,-1], adadaambd, X, Y
 
-def get_AT_matrix(coords, alpha_0, C6, R_vdw, beta, pt = None, lattice = None, k_point = None, noint = False):
+def get_AT_matrix(coords, alpha_0, C6, R_vdw, beta, pt = None, lattice = None, k_grid = None, noint = False):
     #see https://github.com/libmbd/libmbd/blob/master/src/mbd_rpa.F90
     nfreq = 15
     natm = alpha_0.shape[0]
@@ -184,54 +184,62 @@ def get_AT_matrix(coords, alpha_0, C6, R_vdw, beta, pt = None, lattice = None, k
         coords, alpha_0, C6, R_vdw, beta, lattice = lattice, nfreq=nfreq
     )
 
-    if not noint:
-       dipole_matrix_mbd = dipole_matrix(
-                coords,
-                'fermi,dip',
-                R_vdw=R_vdw_rsscs,
-                beta=beta,
-                lattice=lattice,
-                k_point=k_point)
-    else:
-       dipole_matrix_mbd = np.zeros((3*natm, 3*natm))
-
-    energy = 0.0
-
     omega = 4 / 3 * C6_rsscs / alpha_0_rsscs**2
     alpha_dyn = [alpha_0_rsscs / (1 + (u / omega) ** 2) for u in freq]
+    
+    if lattice is None:
+        k_points = [None]
+    else:
+        assert k_grid is not None
+        k_points = get_kpts(lattice, k_grid, shift = 0)
 
-    for ifreq in range(1, nfreq + 1):
-      #this is what is in e.g. Bucko et al 2016 J.Phys.:Condens.Matter 28 045201
-      #AT = np.diag(np.repeat(-alpha_0_rsscs[ifreq], 3)) @ dipole_matrix
+    ene = 0.0
+    for k_point in k_points:
+      if not noint:
+        dipole_matrix_mbd = dipole_matrix(
+                  coords,
+                  'fermi,dip',
+                  R_vdw=R_vdw_rsscs,
+                  beta=beta,
+                  lattice=lattice,
+                  k_point=k_point)
+      else:
+        dipole_matrix_mbd = np.zeros((3*natm, 3*natm))
 
-      #this seems to be what is actually implemented in mbd_rpa (see above)
-      
-      AT = np.zeros((3*natm, 3*natm), dtype = complex)
-      for ii in range(0, natm):
-        for xx in range(0, 3):
-          for jj in range(0, natm):
-            for yy in range(0, 3):
-              res = 0  
-              if pt is not None:
-                res = pt.lam**2*pt.pol_vec[xx]*pt.pol_vec[yy]*freq[ifreq]**2/(freq[ifreq]**2 + pt.omega**2)
-              AT[3*ii+xx,3*jj+yy] = np.sqrt(alpha_dyn[ifreq][ii]*alpha_dyn[ifreq][jj]) \
-                  *(dipole_matrix_mbd[3*ii+xx,3*jj+yy] + res)
+      energy = 0.0
 
-      eigs = np.linalg.eigvalsh(AT)
-      log_eigs = np.log(1.0 + eigs)
-      energy += (1/2/np.pi)*np.sum(log_eigs)*freq_w[ifreq] 
+      for ifreq in range(1, nfreq + 1):
+        #this is what is in e.g. Bucko et al 2016 J.Phys.:Condens.Matter 28 045201
+        #AT = np.diag(np.repeat(-alpha_0_rsscs[ifreq], 3)) @ dipole_matrix
+
+        #this seems to be what is actually implemented in mbd_rpa (see above)
+        
+        AT = np.zeros((3*natm, 3*natm), dtype = complex)
+        for ii in range(0, natm):
+          for xx in range(0, 3):
+            for jj in range(0, natm):
+              for yy in range(0, 3):
+                res = 0  
+                if pt is not None:
+                  res = pt.lam**2*pt.pol_vec[xx]*pt.pol_vec[yy]*freq[ifreq]**2/(freq[ifreq]**2 + pt.omega**2)
+                AT[3*ii+xx,3*jj+yy] = np.sqrt(alpha_dyn[ifreq][ii]*alpha_dyn[ifreq][jj]) \
+                    *(dipole_matrix_mbd[3*ii+xx,3*jj+yy] + res)
+
+        eigs = np.linalg.eigvalsh(AT)
+        log_eigs = np.log(1.0 + eigs)
+        energy += (1/2/np.pi)*np.sum(log_eigs)*freq_w[ifreq]
+
+      ene += energy/len(k_points)
       
       for irpa in range(1, rpa_order_max):
         rpa_orders[irpa] += -1/2/np.pi*(-1)**irpa*np.sum(eigs**irpa / irpa)*freq_w[ifreq]
 
-    return energy, rpa_orders
+    return ene, rpa_orders
 
 def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', lattice=None, k_grid=None, noint = False): #gauge = length, velocity
 
-
     natm = len(elements)
     alpha_0, C6, R_vdw = from_volumes(elements, ratio)
-   
 
     if lattice is None:
         k_points = [None]
@@ -244,20 +252,28 @@ def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', l
     ene, alpha_0_rsscs, omega_rsscs, matrix, dipole_matrix = mbd_energy_get_matrix(coords, alpha_0, C6, R_vdw, \
                                                                 beta=beta, lattice=lattice, k_grid=k_grid, noint = noint)
 
-    AT_energy, rpa_orders = get_AT_matrix(coords, alpha_0, C6, R_vdw, beta=beta, lattice=lattice, k_point=k_points[0], noint = noint)
+    AT_energy, rpa_orders = get_AT_matrix(coords, alpha_0, C6, R_vdw, beta=beta, lattice=lattice, k_grid=k_grid, noint = noint)
     #print('ene', ene, 'AT ene', AT_energy, 'ratio', ene/AT_energy)
     #print('log AT ene', AT_energy, 'rpa_order', np.sum(rpa_orders))
 
-    mbdmatrix = get_pt_mbdmatrix(natm, pt, matrix, alpha_0_rsscs, omega_rsscs, gauge, noint)
-
     omegas = get_omegas(omega_rsscs, pt.omega, natm, pt.nmodes)
-    if gauge == 'length': 
-      eigs, eigvecs = np.linalg.eigh(mbdmatrix)
+    if gauge == 'length':
+      pt.exc = 0.0
+      for idx, k_point in enumerate(k_points):
+        if len(k_points) == 1: 
+          mbdmatrix = get_pt_mbdmatrix(natm, pt, matrix, alpha_0_rsscs, omega_rsscs, gauge, noint)
+          eigs, eigvecs = np.linalg.eigh(mbdmatrix)
+          pt.exc = np.sum(np.sqrt(eigs)) / 2
+        else:
+            mbdmatrix = get_pt_mbdmatrix(natm, pt, matrix[idx], alpha_0_rsscs, omega_rsscs, gauge, noint)
+            eigs, eigvecs = np.linalg.eigh(mbdmatrix)
+            pt.exc += np.sum(np.sqrt(eigs)) / 2
+
       #print('eigs',np.sqrt(eigs))
-      pt.exc = np.sum(np.sqrt(eigs)) / 2
-      ombar = np.sqrt(eigs) #*2
-      phi1 = np.diag(ombar**(0.5)) @ eigvecs.T
-      psi1 = np.diag(ombar**(-0.5)) @ eigvecs.T
+      
+      # ombar = np.sqrt(eigs) #*2
+      # phi1 = np.diag(ombar**(0.5)) @ eigvecs.T
+      # psi1 = np.diag(ombar**(-0.5)) @ eigvecs.T
     elif gauge == 'velocity':
       pqtoada = get_pqtoada(3*natm + pt.nmodes) 
       eigs, phi1, psi1 = diagonalize_pmbdmatrix(np.conj(pqtoada).T @ mbdmatrix @ pqtoada, omegas)
@@ -267,24 +283,28 @@ def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', l
 
 
     pt.exc = pt.exc / len(k_points) -3*np.sum(omega_rsscs) / 2 - pt.omega / 2
-    pt.number, pt.adadaa, pt.X, pt.Y = calc_ptobservables(omegas, phi1, psi1)
+    # pt.number, pt.adadaa, pt.X, pt.Y = calc_ptobservables(omegas, phi1, psi1)
 
-    pt_AT_energy, pt_rpa_orders = get_AT_matrix(coords, alpha_0, C6, R_vdw, beta = beta, pt = pt, lattice=lattice, k_point=k_points[0], noint = noint)
+    pt_AT_energy, pt_rpa_orders = get_AT_matrix(coords, alpha_0, C6, R_vdw, beta = beta, pt = pt, lattice=lattice, k_grid=k_grid, noint = noint)
     #print('ene', pt.exc, 'AT ene', AT_energy, 'ratio', pt.exc/AT_energy)
     #print('log AT ene', AT_energy, 'rpa_order', np.sum(rpa_orders))
 
+    print('ene per electron: ', ene/natm)
+    print('AT_energy per electron: ', AT_energy/natm)
+    print('ptexc per electron: ', pt.exc/natm)
+    print('pt_AT_energy per electron: ', pt_AT_energy/natm)
 
     output_array = {
        'ene' : ene,
        'ptexc' : pt.exc,
        'AT_energy' : AT_energy,
-       'rpa_orders' : rpa_orders,
+      #  'rpa_orders' : rpa_orders,
        'pt_AT_energy' : pt_AT_energy,
-       'pt_rpa_orders' : pt_rpa_orders,
-       'pt_number' : pt.number,
-       'pt_adadaa' : pt.adadaa,
-       'pt_X' : pt.X,
-       'pt_Y' : pt.Y
+      #  'pt_rpa_orders' : pt_rpa_orders,
+      #  'pt_number' : pt.number,
+      #  'pt_adadaa' : pt.adadaa,
+      #  'pt_X' : pt.X,
+      #  'pt_Y' : pt.Y
     }
 
     return output_array
