@@ -286,8 +286,8 @@ def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', l
 
 
     pt.exc = pt.exc / len(k_points) -3*np.sum(omega_rsscs) / 2 - pt.omega / 2
-    phi1 / len(k_points)
-    psi1 / len(k_points)
+    phi1 = phi1 / len(k_points)
+    psi1 = psi1 / len(k_points)
     pt.number, pt.adadaa, pt.X, pt.Y = calc_ptobservables(omegas, phi1, psi1)
 
     pt_AT_energy, pt_rpa_orders = get_AT_matrix(coords, alpha_0, C6, R_vdw, beta = beta, pt = pt, lattice=lattice, k_grid=k_grid, noint = noint)
