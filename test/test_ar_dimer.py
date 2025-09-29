@@ -33,6 +33,7 @@ print('photonnumber', pt_number)
 print('photon adadaa', pt_adadaa)
 
 
+#Reference data from pyqedft code used in C. Tasci et al., Phys. Rev. Lett. 134, 073002 (2025)
 #mol.basis = 'ccpvdz'
 
 #functional: pbe mbd_beta: 0.83
