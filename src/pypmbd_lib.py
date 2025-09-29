@@ -259,6 +259,8 @@ def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', l
     omegas = get_omegas(omega_rsscs, pt.omega, natm, pt.nmodes)
     if gauge == 'length':
       pt.exc = 0.0
+      psi1 = np.zeros((3*natm + pt.nmodes, 3*natm + pt.nmodes), dtype = complex)
+      phi1 = np.zeros((3*natm + pt.nmodes, 3*natm + pt.nmodes), dtype = complex)
       for idx, k_point in enumerate(k_points):
         if len(k_points) == 1: 
           mbdmatrix = get_pt_mbdmatrix(natm, pt, matrix, alpha_0_rsscs, omega_rsscs, gauge, noint)
@@ -271,9 +273,10 @@ def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', l
 
       #print('eigs',np.sqrt(eigs))
       
-      # ombar = np.sqrt(eigs) #*2
-      # phi1 = np.diag(ombar**(0.5)) @ eigvecs.T
-      # psi1 = np.diag(ombar**(-0.5)) @ eigvecs.T
+      ombar = np.sqrt(eigs) #*2
+      phi1 += np.diag(ombar**(0.5)) @ eigvecs.T
+      psi1 += np.diag(ombar**(-0.5)) @ eigvecs.T
+
     elif gauge == 'velocity':
       pqtoada = get_pqtoada(3*natm + pt.nmodes) 
       eigs, phi1, psi1 = diagonalize_pmbdmatrix(np.conj(pqtoada).T @ mbdmatrix @ pqtoada, omegas)
@@ -283,7 +286,9 @@ def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', l
 
 
     pt.exc = pt.exc / len(k_points) -3*np.sum(omega_rsscs) / 2 - pt.omega / 2
-    # pt.number, pt.adadaa, pt.X, pt.Y = calc_ptobservables(omegas, phi1, psi1)
+    phi1 / len(k_points)
+    psi1 / len(k_points)
+    pt.number, pt.adadaa, pt.X, pt.Y = calc_ptobservables(omegas, phi1, psi1)
 
     pt_AT_energy, pt_rpa_orders = get_AT_matrix(coords, alpha_0, C6, R_vdw, beta = beta, pt = pt, lattice=lattice, k_grid=k_grid, noint = noint)
     #print('ene', pt.exc, 'AT ene', AT_energy, 'ratio', pt.exc/AT_energy)
@@ -298,13 +303,13 @@ def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', l
        'ene' : ene,
        'ptexc' : pt.exc,
        'AT_energy' : AT_energy,
-      #  'rpa_orders' : rpa_orders,
+       'rpa_orders' : rpa_orders,
        'pt_AT_energy' : pt_AT_energy,
-      #  'pt_rpa_orders' : pt_rpa_orders,
-      #  'pt_number' : pt.number,
-      #  'pt_adadaa' : pt.adadaa,
-      #  'pt_X' : pt.X,
-      #  'pt_Y' : pt.Y
+       'pt_rpa_orders' : pt_rpa_orders,
+       'pt_number' : pt.number,
+       'pt_adadaa' : pt.adadaa,
+       'pt_X' : pt.X,
+       'pt_Y' : pt.Y
     }
 
     return output_array
