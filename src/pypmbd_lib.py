@@ -294,10 +294,10 @@ def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', l
     #print('ene', pt.exc, 'AT ene', AT_energy, 'ratio', pt.exc/AT_energy)
     #print('log AT ene', AT_energy, 'rpa_order', np.sum(rpa_orders))
 
-    print('ene per electron: ', ene/natm)
-    print('AT_energy per electron: ', AT_energy/natm)
-    print('ptexc per electron: ', pt.exc/natm)
-    print('pt_AT_energy per electron: ', pt_AT_energy/natm)
+    print('ene per atoms: ', ene/natm)
+    print('AT_energy per atom: ', AT_energy/natm)
+    print('ptexc per atom: ', pt.exc/natm)
+    print('pt_AT_energy per atom: ', pt_AT_energy/natm)
 
     output_array = {
        'ene' : ene,
