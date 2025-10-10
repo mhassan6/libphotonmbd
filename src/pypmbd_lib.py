@@ -278,7 +278,12 @@ def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', l
       psi1 += np.diag(ombar**(-0.5)) @ eigvecs.T
 
     elif gauge == 'velocity':
+      if len(k_points) == 1:
+        print('more than 1 kpoint not implemented yet for velocity gauge'
+        exit()
       pqtoada = get_pqtoada(3*natm + pt.nmodes) 
+      mbdmatrix = get_pt_mbdmatrix(natm, pt, matrix, alpha_0_rsscs, omega_rsscs, gauge, noint)
+
       eigs, phi1, psi1 = diagonalize_pmbdmatrix(np.conj(pqtoada).T @ mbdmatrix @ pqtoada, omegas)
       #eigs, phi1, psi1 = diagonalize_pmbdmatrix_gamma(np.conj(pqtoada).T @ mbdmatrix @ pqtoada, omegas)
       #print('eigs',eigs) 

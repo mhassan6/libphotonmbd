@@ -1,0 +1,27 @@
+{
+  "atomic_species": [
+    "Ar", "Ar"
+  ],
+  "atomic_positions": [
+    [
+      0.0,
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0,
+      4.0
+    ]
+  ],
+  "lattice": 0,
+  "kpoints": 0,
+  "total_energy": -1054.639391933850,
+  "ratio": [
+    1.00028763,
+    1.00028763
+  ],
+  "mbd_energy": -0.00024635007299611544,
+  "xc": "pbe",
+  "code": "pyscf"
+}
