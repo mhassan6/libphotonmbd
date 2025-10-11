@@ -6,6 +6,8 @@ import numpy as np
 from pypmbd_parse_json import pypmbd_parse_json
 from photon_mode import photon_mode
 
+from pytest import approx
+
 pt = photon_mode(1, 0.2, 0.1, [0,0,1])
 filename = '../json/ar_pyscf.json'
 gauge = 'length'
@@ -32,6 +34,21 @@ print('log AT ene', pt_AT_energy, 'rpa_order', np.sum(pt_rpa_orders))
 print('photonnumber', pt_number)
 print('photon adadaa', pt_adadaa)
 
+#Compare to old code
+#Gauge length E0 -1054.6393919338504 vdwene -0.00024635007299611544 vdw+pt 0.02928918951142423 pt 0.029535539584420345 ptnumber 0.010602342808323782 adadaa 0.001991878451505221 Mandel Q 0.177269195352225
+print(approx(-0.00024635007299611544, abs=1e-10))
+assert vdwene_len == approx(-0.00024635007299611544, abs=1e-10)
+assert pt.exc == approx(0.02928918951142423, abs=1e-10)
+assert pt_number == approx(0.010602342808323782, abs=1e-10)
+assert pt_adadaa == approx(0.001991878451505221, abs=1e-10)
+
+assert AT_energy == approx(-0.00024635007299611544, abs=1e-10)
+assert pt_AT_energy == approx(0.02928918951142423, abs=1e-10)
+
+print()
+print('Length gauge tests passed!')
+print()
+
 
 gauge = 'velocity'
 output_array = pypmbd_parse_json(filename, pt, gauge)
@@ -57,6 +74,19 @@ print('log AT ene', pt_AT_energy, 'rpa_order', np.sum(pt_rpa_orders))
 print('photonnumber', pt_number)
 print('photon adadaa', pt_adadaa)
 
+#Gauge velocity E0 -1054.6393919338504 vdwene -0.00024635007299611544 vdw+pt 0.029289189511424674 pt 0.02953553958442079 ptnumber 0.11160152906407572 adadaa 0.04536898212856857 Mandel Q 0.2949249989239063
+assert vdwene_len == approx(-0.00024635007299611544, abs=1e-10)
+assert pt.exc == approx(0.02928918951142423, abs=1e-10)
+assert pt_number == approx(0.11160152906407572, abs=1e-8)
+assert pt_adadaa == approx(0.04536898212856857, abs=1e-10)
+
+assert AT_energy == approx(-0.00024635007299611544, abs=1e-10)
+assert pt_AT_energy == approx(0.02928918951142423, abs=1e-10)
+
+
+print()
+print('Velocity gauge tests passed!')
+print()
 
 #Reference data from pyqedft code used in C. Tasci et al., Phys. Rev. Lett. 134, 073002 (2025)
 #mol.basis = 'ccpvdz'
