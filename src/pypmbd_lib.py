@@ -43,18 +43,20 @@ def get_pt_mbdmatrix(natm, pt, matrix, alpha, omega, gauge = 'length', noint = F
           for jj in range(0, natm):
             for yy in range(0, 3):
               mbdmatrix[3*ii+xx,3*jj+yy] = matrix[3*ii+xx,3*jj+yy]
-              mbdmatrix[3*ii+xx,3*jj+yy] += pt.lam**2*pt.pol_vec[xx]*pt.pol_vec[yy] \
+              #R2 term
+              for imodes in range(0, pt.nmodes):
+                mbdmatrix[3*ii+xx,3*jj+yy] += pt.lam[imodes]**2*pt.pol_vec[xx,imodes]*pt.pol_vec[yy,imodes] \
                   *np.sqrt(alpha[ii])*np.sqrt(alpha[jj])*omega[ii]*omega[jj]
 
-      for nmodes in range(0, pt.nmodes):
-        mbdmatrix[3*natm+nmodes, 3*natm+nmodes] = pt.omega**2
+      for imodes in range(0, pt.nmodes):
+        mbdmatrix[3*natm+imodes, 3*natm+imodes] = pt.omega[imodes]**2
       for ii in range(0, natm):
         for xx in range(0, 3):
-          for nmodes in range(0, pt.nmodes):
-            offdiagonal=-pt.lam*pt.pol_vec[xx]*np.sqrt(alpha[ii])*omega[ii]*pt.omega
+          for imodes in range(0, pt.nmodes):
+            offdiagonal=-pt.lam[imodes]*pt.pol_vec[xx,imodes]*np.sqrt(alpha[ii])*omega[ii]*pt.omega[imodes]
 
-            mbdmatrix[3*natm+nmodes, 3*ii+xx] += offdiagonal
-            mbdmatrix[3*ii+xx, 3*natm+nmodes] += offdiagonal
+            mbdmatrix[3*natm+imodes, 3*ii+xx] += offdiagonal
+            mbdmatrix[3*ii+xx, 3*natm+imodes] += offdiagonal
   
   elif gauge == 'velocity':
     mbdmatrix = np.zeros((2*(3*natm + pt.nmodes), 2*(3*natm + pt.nmodes)), dtype = complex)
@@ -150,7 +152,7 @@ def get_omegas(omega_rsscs, ptomega, natm, ptnmodes):
       for xx in range(0,3):
           omegas[count] = omega_rsscs[ii]
           count += 1
-    omegas[-1] = ptomega
+    omegas[3*natm:] = ptomega
     return omegas
 
 
@@ -221,7 +223,8 @@ def get_AT_matrix(coords, alpha_0, C6, R_vdw, beta, pt = None, lattice = None, k
               for yy in range(0, 3):
                 res = 0  
                 if pt is not None:
-                  res = pt.lam**2*pt.pol_vec[xx]*pt.pol_vec[yy]*freq[ifreq]**2/(freq[ifreq]**2 + pt.omega**2)
+                  for imodes in range(0, pt.nmodes):
+                    res = pt.lam[imodes]**2*pt.pol_vec[xx,imodes]*pt.pol_vec[yy,imodes]*freq[ifreq]**2/(freq[ifreq]**2 + pt.omega[imodes]**2)
                 AT[3*ii+xx,3*jj+yy] = np.sqrt(alpha_dyn[ifreq][ii]*alpha_dyn[ifreq][jj]) \
                     *(dipole_matrix_mbd[3*ii+xx,3*jj+yy] + res)
 
@@ -278,8 +281,8 @@ def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', l
       psi1 += np.diag(ombar**(-0.5)) @ eigvecs.T
 
     elif gauge == 'velocity':
-      if len(k_points) > 1:
-        print('more than 1 kpoint not implemented yet for velocity gauge')
+      if len(k_points) > 1 or pt.nmodes > 1:
+        print('more than 1 kpoint and more than 1 photon mode is not implemented yet for velocity gauge')
         exit()
       pqtoada = get_pqtoada(3*natm + pt.nmodes) 
       mbdmatrix = get_pt_mbdmatrix(natm, pt, matrix, alpha_0_rsscs, omega_rsscs, gauge, noint)
@@ -290,7 +293,7 @@ def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', l
       pt.exc = np.sum(eigs) / 4
 
 
-    pt.exc = pt.exc / len(k_points) -3*np.sum(omega_rsscs) / 2 - pt.omega / 2
+    pt.exc = pt.exc / len(k_points) -3*np.sum(omega_rsscs) / 2 - np.sum(pt.omega) / 2
     phi1 = phi1 / len(k_points)
     psi1 = psi1 / len(k_points)
     pt.number, pt.adadaa, pt.X, pt.Y = calc_ptobservables(omegas, phi1, psi1)
