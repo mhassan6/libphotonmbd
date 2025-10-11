@@ -69,12 +69,27 @@ def get_pt_mbdmatrix(natm, pt, matrix, alpha, omega, gauge = 'length', noint = F
       for xx in range(0, 3):
         for imodes in range(0, pt.nmodes):
            offdiagonal = -pt.lam[imodes]*pt.pol_vec[xx,imodes]*np.sqrt(alpha[ii])*omega[ii]/pt.omega[imodes]
-           mbdmatrix[3*ii + xx + imodes, 3*natm + imodes] += offdiagonal
-           mbdmatrix[3*natm + imodes, 3*ii + xx + imodes] += offdiagonal
+#           mbdmatrix[3*ii + xx + imodes, 3*natm + imodes] += offdiagonal
+#           mbdmatrix[3*natm + imodes, 3*ii + xx + imodes] += offdiagonal
+           mbdmatrix[3*ii + xx, 3*natm + imodes] += offdiagonal
+           mbdmatrix[3*natm + imodes, 3*ii + xx] += offdiagonal
+
     for imodes in range(0, pt.nmodes):
       for ii in range(0, natm):
         for xx in range(0, 3):
           mbdmatrix[3*natm + imodes, 3*natm + imodes] += (pt.lam[imodes]*pt.pol_vec[xx,imodes])**2*alpha[ii]*omega[ii]**2/pt.omega[imodes]**2
+
+    #for imodes in range(0, pt.nmodes):
+    #  for jmodes in range(0,pt.nmodes):
+    #    element = 0
+    #    for ii in range(0, natm):
+    #      for xx in range(0, 3):
+    #        for jj in range(0, natm):
+    #          for yy in range(0,3):  
+    #            element += (pt.lam[imodes]*pt.pol_vec[xx,imodes])*(pt.lam[jmodes]*pt.pol_vec[yy,jmodes])*np.sqrt(alpha[ii])*np.sqrt(alpha[jj])*omega[ii]*omega[jj]/pt.omega[imodes]/pt.omega[jmodes]
+    #    mbdmatrix[3*natm + imodes, 3*natm + jmodes] += element
+
+  #np.savetxt(f"mbdmatrix.dat", np.real(mbdmatrix), delimiter=",", fmt='%.10f')
 
   return mbdmatrix
 
