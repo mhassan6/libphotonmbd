@@ -63,18 +63,18 @@ def get_pt_mbdmatrix(natm, pt, matrix, alpha, omega, gauge = 'length', noint = F
     mbdmatrix[(3*natm + pt.nmodes):(6*natm + pt.nmodes), (3*natm + pt.nmodes):(6*natm + pt.nmodes)] = matrix
     mbdmatrix[:(3*natm + pt.nmodes), :(3*natm + pt.nmodes)] = np.diag(np.ones((3*natm + pt.nmodes)))
     for imodes in range(0, pt.nmodes):
-      mbdmatrix[6*natm + pt.nmodes + imodes, 6*natm + pt.nmodes + imodes] += pt.omega**2
+      mbdmatrix[6*natm + pt.nmodes + imodes, 6*natm + pt.nmodes + imodes] += pt.omega[imodes]**2
 
     for ii in range(0, natm):
       for xx in range(0, 3):
         for imodes in range(0, pt.nmodes):
-           offdiagonal = -pt.lam*pt.pol_vec[xx]*np.sqrt(alpha[ii])*omega[ii]/pt.omega
+           offdiagonal = -pt.lam[imodes]*pt.pol_vec[xx,imodes]*np.sqrt(alpha[ii])*omega[ii]/pt.omega[imodes]
            mbdmatrix[3*ii + xx + imodes, 3*natm + imodes] += offdiagonal
            mbdmatrix[3*natm + imodes, 3*ii + xx + imodes] += offdiagonal
     for imodes in range(0, pt.nmodes):
       for ii in range(0, natm):
         for xx in range(0, 3):
-          mbdmatrix[3*natm + imodes, 3*natm +  imodes] += (pt.lam*pt.pol_vec[xx])**2*alpha[ii]*omega[ii]**2/pt.omega**2
+          mbdmatrix[3*natm + imodes, 3*natm + imodes] += (pt.lam[imodes]*pt.pol_vec[xx,imodes])**2*alpha[ii]*omega[ii]**2/pt.omega[imodes]**2
 
   return mbdmatrix
 
@@ -156,7 +156,7 @@ def get_omegas(omega_rsscs, ptomega, natm, ptnmodes):
     return omegas
 
 
-def calc_ptobservables(omegas, phi1, psi1):
+def calc_ptobservables(omegas, phi1, psi1, natm):
     #this assumes the photon number is in the last column/row
     #ombar = np.sqrt(eigvalq) #*2
 
@@ -170,8 +170,10 @@ def calc_ptobservables(omegas, phi1, psi1):
     Y = (Y1 - Y2) / 2
 
     ptnumber_matrix = Y.T @ Y
+    ptnumber = np.sum(np.diag(ptnumber_matrix[3*natm:, 3*natm:]))
     adadaambd=(Y.T@ X)[-1,-1]*(X.T @ Y)[-1,-1]+2*(Y.T @ Y)[-1,-1]**2 #+(Y.T @ Y)[-1,-1]* (Y @ Y)[-1,-1]
-    return ptnumber_matrix[-1,-1], adadaambd, X, Y
+
+    return ptnumber, adadaambd, X, Y #[-1, -1]
 
 def get_AT_matrix(coords, alpha_0, C6, R_vdw, beta, pt = None, lattice = None, k_grid = None, noint = False):
     #see https://github.com/libmbd/libmbd/blob/master/src/mbd_rpa.F90
@@ -224,7 +226,7 @@ def get_AT_matrix(coords, alpha_0, C6, R_vdw, beta, pt = None, lattice = None, k
                 res = 0  
                 if pt is not None:
                   for imodes in range(0, pt.nmodes):
-                    res = pt.lam[imodes]**2*pt.pol_vec[xx,imodes]*pt.pol_vec[yy,imodes]*freq[ifreq]**2/(freq[ifreq]**2 + pt.omega[imodes]**2)
+                    res += pt.lam[imodes]**2*pt.pol_vec[xx,imodes]*pt.pol_vec[yy,imodes]*freq[ifreq]**2/(freq[ifreq]**2 + pt.omega[imodes]**2)
                 AT[3*ii+xx,3*jj+yy] = np.sqrt(alpha_dyn[ifreq][ii]*alpha_dyn[ifreq][jj]) \
                     *(dipole_matrix_mbd[3*ii+xx,3*jj+yy] + res)
 
@@ -296,7 +298,7 @@ def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', l
     pt.exc = pt.exc / len(k_points) -3*np.sum(omega_rsscs) / 2 - np.sum(pt.omega) / 2
     phi1 = phi1 / len(k_points)
     psi1 = psi1 / len(k_points)
-    pt.number, pt.adadaa, pt.X, pt.Y = calc_ptobservables(omegas, phi1, psi1)
+    pt.number, pt.adadaa, pt.X, pt.Y = calc_ptobservables(omegas, phi1, psi1, natm)
 
     pt_AT_energy, pt_rpa_orders = get_AT_matrix(coords, alpha_0, C6, R_vdw, beta = beta, pt = pt, lattice=lattice, k_grid=k_grid, noint = noint)
     #print('ene', pt.exc, 'AT ene', AT_energy, 'ratio', pt.exc/AT_energy)
