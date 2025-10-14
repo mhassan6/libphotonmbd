@@ -249,12 +249,13 @@ def get_AT_matrix(coords, alpha_0, C6, R_vdw, beta, pt = None, lattice = None, k
         log_eigs = np.log(1.0 + eigs)
         energy += (1/2/np.pi)*np.sum(log_eigs)*freq_w[ifreq]
 
-      ene += energy/len(k_points)
-      
-      for irpa in range(1, rpa_order_max):
-        rpa_orders[irpa] += -1/2/np.pi*(-1)**irpa*np.sum(eigs**irpa / irpa)*freq_w[ifreq]  #fix /len(k_points)
+        for irpa in range(1, rpa_order_max):
+          rpa_orders[irpa] += -1/2/np.pi*(-1)**irpa*np.sum(eigs**irpa / irpa)*freq_w[ifreq]  #fix /len(k_points)
 
-    return ene, rpa_orders
+      rpa_orders = rpa_orders / len(k_points)
+      energy = energy/len(k_points)
+      
+    return energy, rpa_orders
 
 def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', lattice=None, k_grid=None, noint = False): #gauge = length, velocity
 
