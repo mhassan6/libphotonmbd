@@ -1,3 +1,2 @@
-1. add test to compare vdw energies to libmbd energies, e.g. Ar dimer
 2. fix test for supercell in length gauge
 3. add test for periodic systems, supercell@gamma + unitcell@kpoints
