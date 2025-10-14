@@ -194,7 +194,7 @@ def get_AT_matrix(coords, alpha_0, C6, R_vdw, beta, pt = None, lattice = None, k
     #see https://github.com/libmbd/libmbd/blob/master/src/mbd_rpa.F90
     nfreq = 15
     natm = alpha_0.shape[0]
-    rpa_order_max = 50
+    rpa_order_max = 10
     rpa_orders = np.zeros(rpa_order_max)
 
     freq, freq_w = freq_grid(nfreq)
@@ -252,7 +252,7 @@ def get_AT_matrix(coords, alpha_0, C6, R_vdw, beta, pt = None, lattice = None, k
       ene += energy/len(k_points)
       
       for irpa in range(1, rpa_order_max):
-        rpa_orders[irpa] += -1/2/np.pi*(-1)**irpa*np.sum(eigs**irpa / irpa)*freq_w[ifreq]
+        rpa_orders[irpa] += -1/2/np.pi*(-1)**irpa*np.sum(eigs**irpa / irpa)*freq_w[ifreq]  #fix /len(k_points)
 
     return ene, rpa_orders
 

@@ -13,7 +13,7 @@ lam = [0.1/np.sqrt(2), 0.1/np.sqrt(2)]
 pol = np.array([[0,0,1],[0,0,1]]).T
 
 pt = photon_mode(2, omega, lam, pol)
-filename = '../json/ar_pyscf.json'
+filename = 'json/ar_pyscf.json'
 gauge = 'length'
 output_array = pypmbd_parse_json(filename, pt, gauge)
 

@@ -9,7 +9,7 @@ from photon_mode import photon_mode
 from pytest import approx
 
 pt = photon_mode(1, 0.2, 0.1, [0,0,1])
-filename = '../json/ar_pyscf.json'
+filename = 'json/ar_pyscf.json'
 gauge = 'length'
 output_array = pypmbd_parse_json(filename, pt, gauge)
 
