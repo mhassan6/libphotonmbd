@@ -190,7 +190,7 @@ def calc_ptobservables(omegas, phi1, psi1, natm):
 
     return ptnumber, adadaambd, X, Y #[-1, -1]
 
-def get_AT_matrix(coords, alpha_0, C6, R_vdw, beta, pt = None, lattice = None, k_grid = None, noint = False):
+def get_AT_matrix(coords, alpha_0, C6, R_vdw, beta, pt = None, lattice = None, k_grid = None, noint = False, shift = 0.5):
     #see https://github.com/libmbd/libmbd/blob/master/src/mbd_rpa.F90
     nfreq = 15
     natm = alpha_0.shape[0]
@@ -210,7 +210,7 @@ def get_AT_matrix(coords, alpha_0, C6, R_vdw, beta, pt = None, lattice = None, k
         k_points = [None]
     else:
         assert k_grid is not None
-        k_points = get_kpts(lattice, k_grid, shift = 0)
+        k_points = get_kpts(lattice, k_grid, shift = shift)
 
     ene = 0.0
     for k_point in k_points:
@@ -258,7 +258,7 @@ def get_AT_matrix(coords, alpha_0, C6, R_vdw, beta, pt = None, lattice = None, k
       
     return ene, rpa_orders
 
-def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', lattice=None, k_grid=None, noint = False): #gauge = length, velocity
+def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', lattice=None, k_grid=None, noint = False, shift=0.5): #gauge = length, velocity
 
     natm = len(elements)
     alpha_0, C6, R_vdw = from_volumes(elements, ratio)
@@ -267,7 +267,7 @@ def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', l
         k_points = [None]
     else:
         assert k_grid is not None
-        k_points = get_kpts(lattice, k_grid, shift = 0)
+        k_points = get_kpts(lattice, k_grid, shift = shift)
         print('k_points: ', k_points)
         print('len k_points: ', len(k_points))
  

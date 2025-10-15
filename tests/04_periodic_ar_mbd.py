@@ -11,8 +11,9 @@ from photon_mode import photon_mode
 from pytest import approx
 
 pt = photon_mode(1, 0.2, 0.1, [0,0,1])
-#filename = 'json/ar_dummy_periodic_unitcell.json'
-filename = 'json/dummy_Ar_natm_2_dist_4_2k.json'
+
+filename = 'json/ar_dummy_periodic_unitcell.json'
+#filename = 'json/dummy_Ar_natm_2_dist_4_2k.json'
 #filename = 'json/dummy_Ar_natm_1_dist_4_4k.json'
 
 gauge = 'length'
@@ -50,56 +51,18 @@ with open(filename, "r") as f:
   lattice = P_Ang*np.array(lattice) #lattice in a.u. while json in AA
   kpoints = data['kpoints']
 
-print(lattice)
-print(kpoints)
-
 geom = MBDGeom(atomic_positions, lattice, kpoints, do_rpa=True, get_rpa_orders=True)
 mbd_ene, mbd_orders = geom.mbd_energy_species(['Ar', 'Ar'], [1, 1], 0.83)
 
-print('mbd_ene', mbd_ene)
-
+assert vdwene_len == approx(mbd_ene, rel=1e-10)
+assert AT_energy == approx(vdwene_len, abs=1e-10)
+assert np.sum(rpa_orders) == approx(AT_energy, abs=1e-10)
 
 print()
-print('here')
+print('MBD tests passed!')
 print()
 
-from pymbd import ang, from_volumes
-
-def argon_crystal():
-    return (
-        np.array([(0.3, 0.1, 0.2), (4.1, -0.2, -0.1)]) * ang,
-        np.array([(8.1, 0.1, -0.2), (0.3, 3.9, -0.1), (-0.1, 0.2, 4.2)]) * ang,
-        (4, 4, 4),
-        ['Ar', 'Ar'],
-        [1.0, 1.0],
-    )
-
-
-def test_argon_crystal(argon_crystal):
-    coords, lattice, k_grid, species, vol_ratios = argon_crystal()
-    ene = MBDGeom(coords, lattice, k_grid, do_rpa=False).mbd_energy_species(species, vol_ratios, 0.83)
-    assert ene == approx(-0.0021037562496878173, rel=1e-10)
-    return ene
-
-ene = test_argon_crystal(argon_crystal)
-
-mbd_coords, mbd_lattice, k_grid, species, vol_ratios = argon_crystal()
-
-print(mbd_coords)
-print(mbd_lattice)
-
-print(ene)
 exit()
-print(ang)
-print(P_Ang)
-
-print(species)
-print(vol_ratios)
-
-print(MBDGeom(atomic_positions, lattice, k_grid, do_rpa=False).mbd_energy_species(species, vol_ratios, 0.83))
-
-exit()
-
 
 
 

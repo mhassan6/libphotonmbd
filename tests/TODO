@@ -1,2 +1,3 @@
-2. fix test for supercell in length gauge
-3. add test for periodic systems, supercell@gamma + unitcell@kpoints
+1. add photon tests:
+-supercell length gauge and velocity gauge
+-unitcell
