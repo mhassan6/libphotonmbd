@@ -304,12 +304,12 @@ def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', l
       for idx, k_point in enumerate(k_points): 
         mbdmatrix = get_pt_mbdmatrix(natm, pt, matrix[idx], alpha_0_rsscs, omega_rsscs, gauge, noint)
 
-      eigs, phi1_t, psi1_t = diagonalize_pmbdmatrix(np.conj(pqtoada).T @ mbdmatrix @ pqtoada, omegas)
-      #eigs, phi1, psi1 = diagonalize_pmbdmatrix_gamma(np.conj(pqtoada).T @ mbdmatrix @ pqtoada, omegas)
-      #print('eigs',eigs) 
-      pt.exc += np.sum(eigs) / 4
-      psi1 += psi1_t
-      phi1 += phi1_t
+        eigs, phi1_t, psi1_t = diagonalize_pmbdmatrix(np.conj(pqtoada).T @ mbdmatrix @ pqtoada, omegas)
+        #eigs, phi1, psi1 = diagonalize_pmbdmatrix_gamma(np.conj(pqtoada).T @ mbdmatrix @ pqtoada, omegas)
+        #print('eigs',eigs) 
+        pt.exc += np.sum(eigs) / 4
+        phi1 += phi1_t
+        psi1 += psi1_t
 
 
     pt.exc = pt.exc / len(k_points) -3*np.sum(omega_rsscs) / 2 - np.sum(pt.omega) / 2
