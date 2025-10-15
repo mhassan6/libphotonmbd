@@ -126,7 +126,7 @@ def mbd_energy_get_matrix(coords, alpha_0, C6, R_vdw, beta, lattice=None, k_grid
     else:
         assert k_grid is not None
         k_points = get_kpts(lattice, k_grid, shift = shift)
-        matrix_list = []
+    matrix_list = []
     ene = 0.0
     for k_point in k_points:
         matrix = np.diag(np.repeat(omega_rsscs**2, 3))
@@ -142,12 +142,11 @@ def mbd_energy_get_matrix(coords, alpha_0, C6, R_vdw, beta, lattice=None, k_grid
 
         if noint:
           dipole_matrix_mbd *= 0
-        #  print('noint')
+        
         matrix = np.diag(np.repeat(omega_rsscs**2, 3)) + np.outer(pre, pre) \
             * dipole_matrix_mbd
         
-        if len(k_points) > 1:
-            matrix_list.append(matrix)
+        matrix_list.append(matrix)
 
         # eigs = np.linalg.eigvalsh(matrix)
         eigs, eigvecs = np.linalg.eigh(matrix)
@@ -156,8 +155,6 @@ def mbd_energy_get_matrix(coords, alpha_0, C6, R_vdw, beta, lattice=None, k_grid
         ene += np.sum(np.sqrt(eigs)) / 2
     ene = ene / len(k_points) - 3 * np.sum(omega_rsscs) / 2
 
-    if len(k_points) > 1:
-        return ene, alpha_0_rsscs, omega_rsscs, matrix_list, dipole_matrix_mbd
+    return ene, alpha_0_rsscs, omega_rsscs, matrix_list, dipole_matrix_mbd
         
-    return ene, alpha_0_rsscs, omega_rsscs, matrix, dipole_matrix_mbd
 

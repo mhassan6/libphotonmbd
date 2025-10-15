@@ -284,10 +284,7 @@ def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', l
       psi1 = np.zeros((3*natm + pt.nmodes, 3*natm + pt.nmodes), dtype = complex)
       phi1 = np.zeros((3*natm + pt.nmodes, 3*natm + pt.nmodes), dtype = complex)
       for idx, k_point in enumerate(k_points):
-        if len(k_points) == 1: 
-          mbdmatrix = get_pt_mbdmatrix(natm, pt, matrix, alpha_0_rsscs, omega_rsscs, gauge, noint)
-        else:
-          mbdmatrix = get_pt_mbdmatrix(natm, pt, matrix[idx], alpha_0_rsscs, omega_rsscs, gauge, noint)
+        mbdmatrix = get_pt_mbdmatrix(natm, pt, matrix[idx], alpha_0_rsscs, omega_rsscs, gauge, noint)
         
         eigs, eigvecs = np.linalg.eigh(mbdmatrix)
         pt.exc += np.sum(np.sqrt(eigs)) / 2
@@ -303,7 +300,7 @@ def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', l
         print('more than 1 kpoint and more than 1 photon mode is not implemented yet for velocity gauge')
         exit()
       pqtoada = get_pqtoada(3*natm + pt.nmodes) 
-      mbdmatrix = get_pt_mbdmatrix(natm, pt, matrix, alpha_0_rsscs, omega_rsscs, gauge, noint)
+      mbdmatrix = get_pt_mbdmatrix(natm, pt, matrix[0], alpha_0_rsscs, omega_rsscs, gauge, noint)
 
       eigs, phi1, psi1 = diagonalize_pmbdmatrix(np.conj(pqtoada).T @ mbdmatrix @ pqtoada, omegas)
       #eigs, phi1, psi1 = diagonalize_pmbdmatrix_gamma(np.conj(pqtoada).T @ mbdmatrix @ pqtoada, omegas)
