@@ -279,10 +279,11 @@ def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', l
     #print('log AT ene', AT_energy, 'rpa_order', np.sum(rpa_orders))
 
     omegas = get_omegas(omega_rsscs, pt.omega, natm, pt.nmodes)
+    pt.exc = 0.0
+    psi1 = np.zeros((3*natm + pt.nmodes, 3*natm + pt.nmodes), dtype = complex)
+    phi1 = np.zeros((3*natm + pt.nmodes, 3*natm + pt.nmodes), dtype = complex)
+
     if gauge == 'length':
-      pt.exc = 0.0
-      psi1 = np.zeros((3*natm + pt.nmodes, 3*natm + pt.nmodes), dtype = complex)
-      phi1 = np.zeros((3*natm + pt.nmodes, 3*natm + pt.nmodes), dtype = complex)
       for idx, k_point in enumerate(k_points):
         mbdmatrix = get_pt_mbdmatrix(natm, pt, matrix[idx], alpha_0_rsscs, omega_rsscs, gauge, noint)
         
@@ -296,16 +297,19 @@ def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', l
       psi1 += np.diag(ombar**(-0.5)) @ eigvecs.T
 
     elif gauge == 'velocity':
-      if len(k_points) > 1 or pt.nmodes > 1:
-        print('more than 1 kpoint and more than 1 photon mode is not implemented yet for velocity gauge')
+      if pt.nmodes > 1:
+        print('more than 1 photon mode is not implemented yet for velocity gauge')
         exit()
-      pqtoada = get_pqtoada(3*natm + pt.nmodes) 
-      mbdmatrix = get_pt_mbdmatrix(natm, pt, matrix[0], alpha_0_rsscs, omega_rsscs, gauge, noint)
+      pqtoada = get_pqtoada(3*natm + pt.nmodes)
+      for idx, k_point in enumerate(k_points): 
+        mbdmatrix = get_pt_mbdmatrix(natm, pt, matrix[idx], alpha_0_rsscs, omega_rsscs, gauge, noint)
 
-      eigs, phi1, psi1 = diagonalize_pmbdmatrix(np.conj(pqtoada).T @ mbdmatrix @ pqtoada, omegas)
+      eigs, phi1_t, psi1_t = diagonalize_pmbdmatrix(np.conj(pqtoada).T @ mbdmatrix @ pqtoada, omegas)
       #eigs, phi1, psi1 = diagonalize_pmbdmatrix_gamma(np.conj(pqtoada).T @ mbdmatrix @ pqtoada, omegas)
       #print('eigs',eigs) 
-      pt.exc = np.sum(eigs) / 4
+      pt.exc += np.sum(eigs) / 4
+      psi1 += psi1_t
+      phi1 += phi1_t
 
 
     pt.exc = pt.exc / len(k_points) -3*np.sum(omega_rsscs) / 2 - np.sum(pt.omega) / 2
