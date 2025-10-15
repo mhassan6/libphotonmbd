@@ -286,12 +286,11 @@ def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', l
       for idx, k_point in enumerate(k_points):
         if len(k_points) == 1: 
           mbdmatrix = get_pt_mbdmatrix(natm, pt, matrix, alpha_0_rsscs, omega_rsscs, gauge, noint)
-          eigs, eigvecs = np.linalg.eigh(mbdmatrix)
-          pt.exc = np.sum(np.sqrt(eigs)) / 2
         else:
-            mbdmatrix = get_pt_mbdmatrix(natm, pt, matrix[idx], alpha_0_rsscs, omega_rsscs, gauge, noint)
-            eigs, eigvecs = np.linalg.eigh(mbdmatrix)
-            pt.exc += np.sum(np.sqrt(eigs)) / 2
+          mbdmatrix = get_pt_mbdmatrix(natm, pt, matrix[idx], alpha_0_rsscs, omega_rsscs, gauge, noint)
+        
+        eigs, eigvecs = np.linalg.eigh(mbdmatrix)
+        pt.exc += np.sum(np.sqrt(eigs)) / 2
 
       #print('eigs',np.sqrt(eigs))
       
