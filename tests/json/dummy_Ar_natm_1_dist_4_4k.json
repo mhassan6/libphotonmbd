@@ -1,0 +1,40 @@
+{
+  "code": "dummy",
+  "xc": "pbe",
+  "atomic_species": [
+    "Ar"
+  ],
+  "atomic_positions": [
+    [
+      0.0,
+      0.0,
+      0.0
+    ]
+  ],
+  "lattice": [
+    [
+      80,
+      0,
+      0
+    ],
+    [
+      0,
+      80,
+      0
+    ],
+    [
+      0,
+      0,
+      4
+    ]
+  ],
+  "kpoints": [
+    1,
+    1,
+    4
+  ],
+  "total_energy": 0,
+  "ratio": [
+    1
+  ]
+}
