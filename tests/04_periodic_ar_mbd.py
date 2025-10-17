@@ -59,8 +59,7 @@ assert AT_energy == approx(vdwene_len, abs=1e-10)
 assert np.sum(rpa_orders) == approx(AT_energy, abs=1e-10)
 
 print()
-print('MBD tests passed!')
-print()
+print('04_test_periodic_ar_mbd.py: MBD gauge tests passed!')
 
 exit()
 

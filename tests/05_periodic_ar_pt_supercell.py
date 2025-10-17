@@ -73,8 +73,7 @@ assert AT_energy == approx(AT_energy_vel, abs=1e-10)
 assert pt_AT_energy == approx(pt_AT_energy_vel, abs=1e-10)
 
 print()
-print('Supercell@Gamma length gauge and Velocity gauge tests passed!')
-print()
+print('05_periodic_ar_pt_supercell: Supercell@Gamma length gauge and Velocity gauge tests passed!')
 
 
 

@@ -85,8 +85,7 @@ assert pt_AT_energy == approx(0.02928918951142423, abs=1e-10)
 
 
 print()
-print('Velocity gauge tests passed!')
-print()
+print('01_test_finite_ar_dimer.py: Velocity gauge tests passed!')
 
 #Reference data from pyqedft code used in C. Tasci et al., Phys. Rev. Lett. 134, 073002 (2025)
 #mol.basis = 'ccpvdz'

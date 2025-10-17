@@ -61,5 +61,5 @@ assert rpa_orders[3]  == approx(mbd_orders[2], rel=1e-10)
 assert rpa_orders[4]  == approx(mbd_orders[3], rel=1e-10)
 
 print()
-print('MBD tests passed!')
-print()
+print('03_test_finite_ar_dimer_mbd_AT_rpa_oders.py: MBD tests passed!')
+
