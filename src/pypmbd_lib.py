@@ -213,7 +213,8 @@ def get_AT_matrix(coords, alpha_0, C6, R_vdw, beta, pt = None, lattice = None, k
         k_points = get_kpts(lattice, k_grid, shift = shift)
 
     ene = 0.0
-    for k_point in k_points:
+    for idx, k_point in enumerate(k_points):
+#    for k_point in k_points:
       if not noint:
         dipole_matrix_mbd = dipole_matrix(
                   coords,
@@ -239,7 +240,7 @@ def get_AT_matrix(coords, alpha_0, C6, R_vdw, beta, pt = None, lattice = None, k
             for jj in range(0, natm):
               for yy in range(0, 3):
                 res = 0  
-                if pt is not None:
+                if pt is not None and idx == 0:
                   for imodes in range(0, pt.nmodes):
                     res += pt.lam[imodes]**2*pt.pol_vec[xx,imodes]*pt.pol_vec[yy,imodes]*freq[ifreq]**2/(freq[ifreq]**2 + pt.omega[imodes]**2)
                 AT[3*ii+xx,3*jj+yy] = np.sqrt(alpha_dyn[ifreq][ii]*alpha_dyn[ifreq][jj]) \
