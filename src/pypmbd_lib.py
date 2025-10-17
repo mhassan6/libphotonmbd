@@ -292,10 +292,10 @@ def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', l
         pt.exc += np.sum(np.sqrt(eigs)) / 2
 
       #print('eigs',np.sqrt(eigs))
-      
-      ombar = np.sqrt(eigs) #*2
-      phi1 += np.diag(ombar**(0.5)) @ eigvecs.T
-      psi1 += np.diag(ombar**(-0.5)) @ eigvecs.T
+        
+        ombar = np.sqrt(eigs) #*2
+        phi1 += np.diag(ombar**(0.5)) @ eigvecs.T
+        psi1 += np.diag(ombar**(-0.5)) @ eigvecs.T
 
     elif gauge == 'velocity':
       if pt.nmodes > 1:
