@@ -6,7 +6,7 @@ from pypmbd_lib import xc_pmbd
 from vdw.modelmbd import DEFAULT_RSSCS_BETA
 
 
-def pypmbd_parse_json(filename, pt, gauge, noint = False):
+def pypmbd_parse_json(filename, pt, gauge, noint = False, shift = 0.):
 
    json_file = filename
 
@@ -42,10 +42,11 @@ def pypmbd_parse_json(filename, pt, gauge, noint = False):
    print('Veff/Vfree ratio: ', ratio)
    print('npt modes:', pt.nmodes)
    print('pt freq:',pt.omega)
-   print('pt lam:', pt.lam,'\n\n')
+   print('pt lam:', pt.lam)
+   print('shift:', shift, '\n\n')
     
    output_array = xc_pmbd(atomic_positions, atomic_species, ratio, pt, beta = DEFAULT_RSSCS_BETA[xc_fun], gauge = gauge, \
-      lattice=lattice, k_grid=kpoints, noint = noint)
+      lattice=lattice, k_grid=kpoints, noint = noint, shift = shift)
    output_array.update({'E0': E0})
    output_array.update({'json': data})
    return output_array

@@ -17,7 +17,7 @@ filename = 'json/ar_dummy_periodic_unitcell.json'
 #filename = 'json/dummy_Ar_natm_1_dist_4_4k.json'
 
 gauge = 'length'
-output_array = pypmbd_parse_json(filename, pt, gauge)
+output_array = pypmbd_parse_json(filename, pt, gauge, shift = 0.5)
 
 vdwene_len = output_array['ene']
 E0 = output_array['E0']
