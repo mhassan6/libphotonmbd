@@ -65,19 +65,20 @@ def get_pt_mbdmatrix(natm, pt, matrix, alpha, omega, gauge = 'length', noint = F
     for imodes in range(0, pt.nmodes):
       mbdmatrix[6*natm + pt.nmodes + imodes, 6*natm + pt.nmodes + imodes] += pt.omega[imodes]**2
 
-    for ii in range(0, natm):
-      for xx in range(0, 3):
-        for imodes in range(0, pt.nmodes):
-           offdiagonal = -pt.lam[imodes]*pt.pol_vec[xx,imodes]*np.sqrt(alpha[ii])*omega[ii]/pt.omega[imodes]
-#           mbdmatrix[3*ii + xx + imodes, 3*natm + imodes] += offdiagonal
-#           mbdmatrix[3*natm + imodes, 3*ii + xx + imodes] += offdiagonal
-           mbdmatrix[3*ii + xx, 3*natm + imodes] += offdiagonal
-           mbdmatrix[3*natm + imodes, 3*ii + xx] += offdiagonal
-
-    for imodes in range(0, pt.nmodes):
+    if k_point_idx == 0:
       for ii in range(0, natm):
         for xx in range(0, 3):
-          mbdmatrix[3*natm + imodes, 3*natm + imodes] += (pt.lam[imodes]*pt.pol_vec[xx,imodes])**2*alpha[ii]*omega[ii]**2/pt.omega[imodes]**2
+          for imodes in range(0, pt.nmodes):
+            offdiagonal = -pt.lam[imodes]*pt.pol_vec[xx,imodes]*np.sqrt(alpha[ii])*omega[ii]/pt.omega[imodes]
+#           mbdmatrix[3*ii + xx + imodes, 3*natm + imodes] += offdiagonal
+#           mbdmatrix[3*natm + imodes, 3*ii + xx + imodes] += offdiagonal
+            mbdmatrix[3*ii + xx, 3*natm + imodes] += offdiagonal
+            mbdmatrix[3*natm + imodes, 3*ii + xx] += offdiagonal
+
+      for imodes in range(0, pt.nmodes):
+        for ii in range(0, natm):
+          for xx in range(0, 3):
+            mbdmatrix[3*natm + imodes, 3*natm + imodes] += (pt.lam[imodes]*pt.pol_vec[xx,imodes])**2*alpha[ii]*omega[ii]**2/pt.omega[imodes]**2
 
     #for imodes in range(0, pt.nmodes):
     #  for jmodes in range(0,pt.nmodes):
@@ -303,7 +304,7 @@ def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', l
         exit()
       pqtoada = get_pqtoada(3*natm + pt.nmodes)
       for idx, k_point in enumerate(k_points): 
-        mbdmatrix = get_pt_mbdmatrix(natm, pt, matrix[idx], alpha_0_rsscs, omega_rsscs, gauge, noint)
+        mbdmatrix = get_pt_mbdmatrix(natm, pt, matrix[idx], alpha_0_rsscs, omega_rsscs, gauge, noint, idx)
 
         eigs, phi1_t, psi1_t = diagonalize_pmbdmatrix(np.conj(pqtoada).T @ mbdmatrix @ pqtoada, omegas)
         #eigs, phi1, psi1 = diagonalize_pmbdmatrix_gamma(np.conj(pqtoada).T @ mbdmatrix @ pqtoada, omegas)

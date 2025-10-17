@@ -25,7 +25,8 @@ pt_number = output_array['pt_number']
 pt_adadaa = output_array['pt_adadaa']
 
 print('Gauge', gauge, 'E0', E0, 'vdwene', vdwene_len4, 'vdw+pt', pt_4.exc)#, 'pt', pt.exc-vdwene_len)
-
+print('photonnumber', pt_number)
+print('photon adadaa', pt_adadaa)
 print('')
 
 
@@ -46,7 +47,8 @@ pt_number = output_array['pt_number']
 pt_adadaa = output_array['pt_adadaa']
 
 print('Gauge', gauge, 'E0', E0, 'vdwene', vdwene_len2, 'vdw+pt', pt_2.exc)#, 'pt', pt.exc-vdwene_len)
-
+print('photonnumber', pt_number)
+print('photon adadaa', pt_adadaa)
 print('')
 
 
@@ -66,7 +68,8 @@ pt_number = output_array['pt_number']
 pt_adadaa = output_array['pt_adadaa']
 
 print('Gauge', gauge, 'E0', E0, 'vdwene', vdwene_len1, 'vdw+pt', pt_1.exc)#, 'pt', pt.exc-vdwene_len)
-
+print('photonnumber', pt_number)
+print('photon adadaa', pt_adadaa)
 
 assert vdwene_len1 == approx(vdwene_len2 / 2, abs=1e-10)
 assert vdwene_len1 == approx(vdwene_len4 / 4, abs=1e-10)
