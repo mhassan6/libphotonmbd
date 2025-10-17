@@ -30,9 +30,8 @@ def get_photon_number_fd(coords, elements, ratio, pt, beta):
 
 ### xc functions:
 
-def get_pt_mbdmatrix(natm, pt, matrix, alpha, omega, gauge = 'length', noint = False):
-#alpha_0_rsscs, omega_rsscs
-#alphaxyz, omega_contrnew
+def get_pt_mbdmatrix(natm, pt, matrix, alpha, omega, gauge = 'length', noint = False, k_point_idx = 0):
+
   if noint: 
     matrix = np.diag(np.diag(matrix))
 
@@ -43,20 +42,21 @@ def get_pt_mbdmatrix(natm, pt, matrix, alpha, omega, gauge = 'length', noint = F
           for jj in range(0, natm):
             for yy in range(0, 3):
               mbdmatrix[3*ii+xx,3*jj+yy] = matrix[3*ii+xx,3*jj+yy]
-              #R2 term
-              for imodes in range(0, pt.nmodes):
-                mbdmatrix[3*ii+xx,3*jj+yy] += pt.lam[imodes]**2*pt.pol_vec[xx,imodes]*pt.pol_vec[yy,imodes] \
-                  *np.sqrt(alpha[ii])*np.sqrt(alpha[jj])*omega[ii]*omega[jj]
+              #R2 term (add only for first kpoint (should be gamma?)
+              if k_point_idx == 0:
+                for imodes in range(0, pt.nmodes):
+                  mbdmatrix[3*ii+xx,3*jj+yy] += pt.lam[imodes]**2*pt.pol_vec[xx,imodes]*pt.pol_vec[yy,imodes] \
+                    *np.sqrt(alpha[ii])*np.sqrt(alpha[jj])*omega[ii]*omega[jj]
 
       for imodes in range(0, pt.nmodes):
         mbdmatrix[3*natm+imodes, 3*natm+imodes] = pt.omega[imodes]**2
-      for ii in range(0, natm):
-        for xx in range(0, 3):
-          for imodes in range(0, pt.nmodes):
-            offdiagonal=-pt.lam[imodes]*pt.pol_vec[xx,imodes]*np.sqrt(alpha[ii])*omega[ii]*pt.omega[imodes]
-
-            mbdmatrix[3*natm+imodes, 3*ii+xx] += offdiagonal
-            mbdmatrix[3*ii+xx, 3*natm+imodes] += offdiagonal
+      if k_point_idx == 0:
+        for ii in range(0, natm):
+          for xx in range(0, 3):
+            for imodes in range(0, pt.nmodes):
+              offdiagonal=-pt.lam[imodes]*pt.pol_vec[xx,imodes]*np.sqrt(alpha[ii])*omega[ii]*pt.omega[imodes]
+              mbdmatrix[3*natm+imodes, 3*ii+xx] += offdiagonal
+              mbdmatrix[3*ii+xx, 3*natm+imodes] += offdiagonal
   
   elif gauge == 'velocity':
     mbdmatrix = np.zeros((2*(3*natm + pt.nmodes), 2*(3*natm + pt.nmodes)), dtype = complex)
@@ -285,7 +285,7 @@ def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', l
 
     if gauge == 'length':
       for idx, k_point in enumerate(k_points):
-        mbdmatrix = get_pt_mbdmatrix(natm, pt, matrix[idx], alpha_0_rsscs, omega_rsscs, gauge, noint)
+        mbdmatrix = get_pt_mbdmatrix(natm, pt, matrix[idx], alpha_0_rsscs, omega_rsscs, gauge, noint, idx)
         
         eigs, eigvecs = np.linalg.eigh(mbdmatrix)
         pt.exc += np.sum(np.sqrt(eigs)) / 2
