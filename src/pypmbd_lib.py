@@ -1,6 +1,6 @@
 import numpy as np
 from pymbd import from_volumes, mbd_energy
-from pymbd_mod import screening_all_freqs, mbd_energy_get_matrix #, screening_all_freqs_orig
+from pymbd_mod import screening_all_freqs, mbd_energy_get_matrix,mbd_energy_get_matrix2 #, screening_all_freqs_orig
 from pymbd.pymbd import freq_grid, dipole_matrix, get_kpts, screening
 from scipy.linalg import block_diag
 
@@ -260,10 +260,12 @@ def get_AT_matrix(coords, alpha_0, C6, R_vdw, beta, pt = None, lattice = None, k
       
     return ene, rpa_orders
 
-def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', lattice=None, k_grid=None, noint = False, shift=0.5): #gauge = length, velocity
+def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', lattice=None, k_grid=None, noint = False, rpa = True, shift=0.5): #gauge = length, velocity
 
     natm = len(elements)
     alpha_0, C6, R_vdw = from_volumes(elements, ratio)
+
+    print('here0')
 
     if lattice is None:
         k_points = [None]
@@ -273,12 +275,14 @@ def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', l
         print('k_points: ', k_points)
         print('len k_points: ', len(k_points))
  
-    ene, alpha_0_rsscs, omega_rsscs, matrix, dipole_matrix = mbd_energy_get_matrix(coords, alpha_0, C6, R_vdw, \
+    ene, alpha_0_rsscs, omega_rsscs, matrix, dipole_matrix = mbd_energy_get_matrix2(coords, alpha_0, C6, R_vdw, \
                                                                 beta=beta, lattice=lattice, k_grid=k_grid, noint = noint, shift = shift)
 
-    AT_energy, rpa_orders = get_AT_matrix(coords, alpha_0, C6, R_vdw, beta=beta, lattice=lattice, k_grid=k_grid, noint = noint, shift = shift)
-    #print('ene', ene, 'AT ene', AT_energy, 'ratio', ene/AT_energy)
-    #print('log AT ene', AT_energy, 'rpa_order', np.sum(rpa_orders))
+    if rpa == True:
+      AT_energy, rpa_orders = get_AT_matrix(coords, alpha_0, C6, R_vdw, beta=beta, lattice=lattice, k_grid=k_grid, noint = noint, shift = shift)
+    else:
+      AT_energy = 0
+      rpa_orders = 0
 
     omegas = get_omegas(omega_rsscs, pt.omega, natm, pt.nmodes)
     pt.exc = 0.0
@@ -319,9 +323,11 @@ def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', l
     psi1 = psi1 / len(k_points)
     pt.number, pt.adadaa, pt.X, pt.Y = calc_ptobservables(omegas, phi1, psi1, natm)
 
-    pt_AT_energy, pt_rpa_orders = get_AT_matrix(coords, alpha_0, C6, R_vdw, beta = beta, pt = pt, lattice=lattice, k_grid=k_grid, noint = noint, shift = shift)
-    #print('ene', pt.exc, 'AT ene', AT_energy, 'ratio', pt.exc/AT_energy)
-    #print('log AT ene', AT_energy, 'rpa_order', np.sum(rpa_orders))
+    if rpa == True:
+      pt_AT_energy, pt_rpa_orders = get_AT_matrix(coords, alpha_0, C6, R_vdw, beta = beta, pt = pt, lattice=lattice, k_grid=k_grid, noint = noint, shift = shift)
+    else:
+      pt_AT_energy = 0
+      pt_rpa_orders = 0
 
     print('ene per atoms: ', ene/natm)
     print('AT_energy per atom: ', AT_energy/natm)
