@@ -156,11 +156,11 @@ def mbd_energy_get_matrix(coords, alpha_0, C6, R_vdw, beta, lattice=None, k_grid
         ene += np.sum(np.sqrt(eigs)) / 2
     ene = ene / len(k_points) - 3 * np.sum(omega_rsscs) / 2
 
-    return ene, alpha_0_rsscs, omega_rsscs, matrix_list, dipole_matrix_mbd
+    return ene, alpha_0_rsscs, omega_rsscs, matrix_list#, dipole_matrix_mbd
         
 # this is the same function as in pymbd -> md_energy(), only with additional output, but more performant
 
-def mbd_energy_get_matrix2(coords, alpha_0, C6, R_vdw, beta, lattice=None, k_grid=None, nfreq=15, noint = False, shift=0.5):
+def mbd_energy_get_matrix2(coords, alpha_0, C6, R_vdw, beta, lattice=None, k_grid=None, nfreq=15, noint = False, runmode = 'rsscs', shift=0.5):
     r"""Calculate an MBD energy.
 
     :param array-like coords: (a.u.) atom coordinates in rows
@@ -175,11 +175,14 @@ def mbd_energy_get_matrix2(coords, alpha_0, C6, R_vdw, beta, lattice=None, k_gri
     coords, alpha_0, C6, R_vdw, lattice = map(
         _array, (coords, alpha_0, C6, R_vdw, lattice)
     )
-    alpha_0_rsscs, C6_rsscs, R_vdw_rsscs = screening(
-        coords, alpha_0, C6, R_vdw, beta, lattice=lattice, nfreq=15
-    )
-    print('alpha_0_rsscs: ', alpha_0_rsscs)
-    omega_rsscs = 4 / 3 * C6_rsscs / alpha_0_rsscs**2
+    if runmode is not 'plain':
+      alpha_0_rsscs, C6_rsscs, R_vdw_rsscs = screening(
+        coords, alpha_0, C6, R_vdw, beta, lattice=lattice, nfreq=15)
+      omega_rsscs = 4 / 3 * C6_rsscs / alpha_0_rsscs**2
+    else:
+      alpha_0_rsscs = alpha_0
+      omega_rsscs = 4 / 3 * C6 / alpha_0**2
+      R_vdw_rsscs = R_vdw
 
     pre = np.repeat(omega_rsscs * np.sqrt(alpha_0_rsscs), 3)
     pre2 = np.outer(pre, pre)
@@ -222,4 +225,4 @@ def mbd_energy_get_matrix2(coords, alpha_0, C6, R_vdw, beta, lattice=None, k_gri
         ene += np.sum(np.sqrt(eigs)) / 2
     ene = ene / len(k_points) - 3 * np.sum(omega_rsscs) / 2
 
-    return ene, alpha_0_rsscs, omega_rsscs, matrix_list, dipole_matrix_mbd
+    return ene, alpha_0_rsscs, omega_rsscs, matrix_list #, dipole_matrix_mbd

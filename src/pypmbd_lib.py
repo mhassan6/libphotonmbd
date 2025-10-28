@@ -260,7 +260,7 @@ def get_AT_matrix(coords, alpha_0, C6, R_vdw, beta, pt = None, lattice = None, k
       
     return ene, rpa_orders
 
-def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', lattice=None, k_grid=None, noint = False, rpa = True, shift=0.5): #gauge = length, velocity
+def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', lattice=None, k_grid=None, noint = False, rpa = True, runmode = 'rsscs', shift=0.5): #gauge = length, velocity
 
     natm = len(elements)
     alpha_0, C6, R_vdw = from_volumes(elements, ratio)
@@ -273,8 +273,13 @@ def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', l
         print('k_points: ', k_points)
         print('len k_points: ', len(k_points))
  
-    ene, alpha_0_rsscs, omega_rsscs, matrix, dipole_matrix = mbd_energy_get_matrix2(coords, alpha_0, C6, R_vdw, \
-                                                                beta=beta, lattice=lattice, k_grid=k_grid, noint = noint, shift = shift)
+    ene, alpha_0_rsscs, omega_rsscs, matrix = mbd_energy_get_matrix2(coords, alpha_0, C6, R_vdw, \
+                                                 beta=beta, lattice=lattice, k_grid=k_grid, noint = noint, \
+                                                 runmode = runmode, shift = shift)
+
+    if runmode == 'plain':
+      omega_rsscs = 4 / 3 * C6 / alpha_0**2
+      alpha_0_rsscs = alpha_0
 
     if rpa == True:
       AT_energy, rpa_orders = get_AT_matrix(coords, alpha_0, C6, R_vdw, beta=beta, lattice=lattice, k_grid=k_grid, noint = noint, shift = shift)

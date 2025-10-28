@@ -7,3 +7,5 @@ python3 04_periodic_ar_mbd.py  | tail -1
 python3 05_periodic_ar_pt_supercell.py | tail -1
 python3 06_periodic_ar_pt_unitcell.py  | tail -1
 python3 07_periodic_ar_supercell_to_unitcell.py | tail -1
+python3 08_periodic_C_supercell_to_unitcell.py | tail -1
+python3 09_finite_ar_dimer_mbd_plain.py | tail -1
