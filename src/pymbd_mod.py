@@ -215,8 +215,8 @@ def mbd_energy_get_matrix2(coords, alpha_0, C6, R_vdw, beta, lattice=None, k_gri
 
         matrix_list.append(matrix)
 
-        # eigs = np.linalg.eigvalsh(matrix)
-        eigs, eigvecs = np.linalg.eigh(matrix)
+        eigs = np.linalg.eigvalsh(matrix)
+        #eigs, eigvecs = np.linalg.eigh(matrix)
 
 
         ene += np.sum(np.sqrt(eigs)) / 2

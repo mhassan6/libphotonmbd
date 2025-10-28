@@ -265,8 +265,6 @@ def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', l
     natm = len(elements)
     alpha_0, C6, R_vdw = from_volumes(elements, ratio)
 
-    print('here0')
-
     if lattice is None:
         k_points = [None]
     else:
@@ -296,7 +294,7 @@ def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', l
         eigs, eigvecs = np.linalg.eigh(mbdmatrix)
         pt.exc += np.sum(np.sqrt(eigs)) / 2
 
-      #print('eigs',np.sqrt(eigs))
+        #print(idx, 'eigs', np.sqrt(eigs))
         
         ombar = np.sqrt(eigs) #*2
         phi1 += np.diag(ombar**(0.5)) @ eigvecs.T
