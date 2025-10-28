@@ -185,25 +185,20 @@ def mbd_energy_get_matrix2(coords, alpha_0, C6, R_vdw, beta, lattice=None, k_gri
     pre2 = np.outer(pre, pre)
     if lattice is None:
         k_points = [None]
+        Mgeom = MBDGeom(coords)
     else:
         assert k_grid is not None
         k_points = get_kpts(lattice, k_grid, shift = shift)
+        Mgeom = MBDGeom(coords, lattice, k_points)        
 
     matrix_list = []
     ene = 0.0
     matrix_diag = np.diag(np.repeat(omega_rsscs**2, 3))
 
-    count = 0
     for k_point in k_points:
-        print(k_points, 'her1', count)
-        count+=1       
 
         if not noint:
-          if lattice is not None:
-            dipole_matrix_mbd = MBDGeom(coords, lattice, k_points).dipole_matrix('fermi,dip', beta=beta, k_point=k_point, R_vdw= R_vdw_rsscs)
-          else:
-            dipole_matrix_mbd = MBDGeom(coords).dipole_matrix('fermi,dip', beta=beta, k_point=k_point, R_vdw= R_vdw_rsscs)
-
+            dipole_matrix_mbd = Mgeom.dipole_matrix('fermi,dip', beta=beta, k_point=k_point, R_vdw= R_vdw_rsscs)
 
           #dipole_matrix_mbd = dipole_matrix(
           #        coords,
