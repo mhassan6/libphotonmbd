@@ -4,9 +4,11 @@ from atomic_constants import P_Har, P_Ang
 from photon_mode import photon_mode
 from pypmbd_lib import xc_pmbd
 from vdw.modelmbd import DEFAULT_RSSCS_BETA
-
+import time
 
 def pypmbd_parse_json(filename, pt, gauge, noint = False, rpa = True, runmode = 'rsscs', shift = 0.):
+
+   start_time = time.time()
 
    json_file = filename
 
@@ -49,6 +51,11 @@ def pypmbd_parse_json(filename, pt, gauge, noint = False, rpa = True, runmode = 
       lattice=lattice, k_grid=kpoints, noint = noint, rpa = rpa, runmode = runmode, shift = shift)
    output_array.update({'E0': E0})
    output_array.update({'json': data})
+
+   print('')
+   print("PMBD Runtime: --- %s seconds ---" % (time.time() - start_time))
+   print('')
+
    return output_array
 
 
