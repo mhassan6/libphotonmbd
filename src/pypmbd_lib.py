@@ -273,7 +273,7 @@ def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', l
         print('k_points: ', k_points)
         print('len k_points: ', len(k_points))
  
-    ene, alpha_0_rsscs, omega_rsscs, matrix = mbd_energy_get_matrix2(coords, alpha_0, C6, R_vdw, \
+    ene, alpha_0_rsscs, omega_rsscs, matrix, eigvecs_list, eigs_list = mbd_energy_get_matrix2(coords, alpha_0, C6, R_vdw, \
                                                  beta=beta, lattice=lattice, k_grid=k_grid, noint = noint, \
                                                  runmode = runmode, shift = shift)
 
@@ -294,9 +294,18 @@ def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', l
 
     if gauge == 'length':
       for idx, k_point in enumerate(k_points):
-        mbdmatrix = get_pt_mbdmatrix(natm, pt, matrix[idx], alpha_0_rsscs, omega_rsscs, gauge, noint, idx)
-        
-        eigs, eigvecs = np.linalg.eigh(mbdmatrix)
+        if idx == 0:
+          mbdmatrix = get_pt_mbdmatrix(natm, pt, matrix[idx], alpha_0_rsscs, omega_rsscs, gauge, noint, idx)
+          eigs, eigvecs = np.linalg.eigh(mbdmatrix)
+        else:
+          eigvecs = np.zeros((3*natm + pt.nmodes, 3*natm + pt.nmodes), dtype = complex)
+          eigvecs[:3*natm, :3*natm] = eigvecs_list[idx]
+          eigvecs[3*natm:, 3*natm:] = np.diag(np.ones(pt.nmodes))
+
+          eigs = np.zeros((3*natm + pt.nmodes))
+          eigs[:3*natm] = eigs_list[idx]
+          eigs[3*natm:] = pt.omega**2
+ 
         pt.exc += np.sum(np.sqrt(eigs)) / 2
 
         #print(idx, 'eigs', np.sqrt(eigs))

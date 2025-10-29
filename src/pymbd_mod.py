@@ -175,7 +175,7 @@ def mbd_energy_get_matrix2(coords, alpha_0, C6, R_vdw, beta, lattice=None, k_gri
     coords, alpha_0, C6, R_vdw, lattice = map(
         _array, (coords, alpha_0, C6, R_vdw, lattice)
     )
-    if runmode is not 'plain':
+    if runmode != 'plain':
       alpha_0_rsscs, C6_rsscs, R_vdw_rsscs = screening(
         coords, alpha_0, C6, R_vdw, beta, lattice=lattice, nfreq=15)
       omega_rsscs = 4 / 3 * C6_rsscs / alpha_0_rsscs**2
@@ -195,11 +195,16 @@ def mbd_energy_get_matrix2(coords, alpha_0, C6, R_vdw, beta, lattice=None, k_gri
         Mgeom = MBDGeom(coords, lattice, k_points)        
 
     matrix_list = []
+    eigvecs_list = []
+    eigs_list = []
+
     ene = 0.0
     matrix_diag = np.diag(np.repeat(omega_rsscs**2, 3))
 
+    #count = 0
     for k_point in k_points:
-
+        #print(k_point, count)
+        #count += 1
         if not noint:
             dipole_matrix_mbd = Mgeom.dipole_matrix('fermi,dip', beta=beta, k_point=k_point, R_vdw= R_vdw_rsscs)
 
@@ -216,13 +221,14 @@ def mbd_energy_get_matrix2(coords, alpha_0, C6, R_vdw, beta, lattice=None, k_gri
         matrix = matrix_diag + pre2 \
             * dipole_matrix_mbd
 
-        matrix_list.append(matrix)
-
-        eigs = np.linalg.eigvalsh(matrix)
-        #eigs, eigvecs = np.linalg.eigh(matrix)
-
-
+        #eigs = np.linalg.eigvalsh(matrix)
+        eigs, eigvecs = np.linalg.eigh(matrix)
         ene += np.sum(np.sqrt(eigs)) / 2
+
+        matrix_list.append(matrix)
+        eigvecs_list.append(eigvecs)
+        eigs_list.append(eigs)       
+ 
     ene = ene / len(k_points) - 3 * np.sum(omega_rsscs) / 2
 
-    return ene, alpha_0_rsscs, omega_rsscs, matrix_list #, dipole_matrix_mbd
+    return ene, alpha_0_rsscs, omega_rsscs, matrix_list, eigvecs_list, eigs_list #, dipole_matrix_mbd
