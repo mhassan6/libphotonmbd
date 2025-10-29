@@ -5,6 +5,7 @@ from photon_mode import photon_mode
 from pypmbd_lib import xc_pmbd
 from vdw.modelmbd import DEFAULT_RSSCS_BETA
 import time
+from helper_functions import format_time
 
 def pypmbd_parse_json(filename, pt, gauge, noint = False, rpa = True, runmode = 'rsscs', shift = 0.):
 
@@ -53,7 +54,9 @@ def pypmbd_parse_json(filename, pt, gauge, noint = False, rpa = True, runmode = 
    output_array.update({'json': data})
 
    print('')
-   print("PMBD Runtime: --- %s seconds ---" % (time.time() - start_time))
+   elapsed_seconds = time.time() - start_time
+   print('PMBD Runtime: --- ' + format_time(elapsed_seconds) + ' hours:minutes:seconds ---')
+   print("PMBD Runtime: --- %s seconds ---" %elapsed_seconds)
    print('')
 
    return output_array
