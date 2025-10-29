@@ -1,10 +1,11 @@
-import numpy as np
 import json
-from atomic_constants import P_Har, P_Ang
-from photon_mode import photon_mode
-from pypmbd_lib import xc_pmbd
-from vdw.modelmbd import DEFAULT_RSSCS_BETA
 import time
+import numpy as np
+
+from vdw.modelmbd import DEFAULT_RSSCS_BETA
+
+from atomic_constants import P_Ang
+from pypmbd_lib import xc_pmbd
 from helper_functions import format_time
 
 def pypmbd_parse_json(filename, pt, gauge, noint = False, rpa = True, runmode = 'rsscs', shift = 0.):
@@ -37,7 +38,7 @@ def pypmbd_parse_json(filename, pt, gauge, noint = False, rpa = True, runmode = 
    xc_fun = data['xc']
 
    ratio = data['ratio'] # if using VASP
-    
+ 
    print('atomic_positions: ', atomic_positions)
    print('atomic_species: ', atomic_species)
    print('lattice: ', lattice)

@@ -1,16 +1,8 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
-from __future__ import division, print_function
-
-import csv
-import sys
-from itertools import product
 
 import numpy as np
-from numpy.polynomial.legendre import leggauss
-from pkg_resources import resource_string
-from scipy.special import erf, erfc
 
 from pymbd.pymbd import freq_grid, dipole_matrix, _array, screening, get_kpts
 from pymbd.fortran import MBDGeom

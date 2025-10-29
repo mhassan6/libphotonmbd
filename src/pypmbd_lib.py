@@ -1,8 +1,9 @@
 import numpy as np
-from pymbd import from_volumes, mbd_energy
-from pymbd_mod import screening_all_freqs, mbd_energy_get_matrix,mbd_energy_get_matrix2 #, screening_all_freqs_orig
+
 from pymbd.pymbd import freq_grid, dipole_matrix, get_kpts, screening
-from scipy.linalg import block_diag
+
+from pymbd import from_volumes#, mbd_energy
+from pymbd_mod import mbd_energy_get_matrix2 #mbd_energy_get_matrix, screening_all_freqs, screening_all_freqs_orig
 
 ### finite difference:
 def get_photon_number_fd(coords, elements, ratio, pt, beta):
@@ -11,7 +12,6 @@ def get_photon_number_fd(coords, elements, ratio, pt, beta):
   delta = 1e-3
   om = pt.omega
   lam = pt.lam
-  pol = pt.pol_vec
 
   pt_op = photon_mode(1, om + delta, lam, pt.pol_vec)
   vdwene = xc_mbd(coords, elements, ratio, pt_op, beta)
@@ -281,7 +281,7 @@ def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', l
       omega_rsscs = 4 / 3 * C6 / alpha_0**2
       alpha_0_rsscs = alpha_0
 
-    if rpa == True:
+    if rpa is True:
       AT_energy, rpa_orders = get_AT_matrix(coords, alpha_0, C6, R_vdw, beta=beta, lattice=lattice, k_grid=k_grid, noint = noint, shift = shift)
     else:
       AT_energy = 0
@@ -293,7 +293,7 @@ def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', l
     phi1 = np.zeros((3*natm + pt.nmodes, 3*natm + pt.nmodes), dtype = complex)
 
     if gauge == 'length':
-      for idx, k_point in enumerate(k_points):
+      for idx in range(0, len(k_points)):
         if idx == 0:
           mbdmatrix = get_pt_mbdmatrix(natm, pt, matrix[idx], alpha_0_rsscs, omega_rsscs, gauge, noint, idx)
           eigs, eigvecs = np.linalg.eigh(mbdmatrix)
@@ -319,7 +319,7 @@ def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', l
         print('more than 1 photon mode is not implemented yet for velocity gauge')
         exit()
       pqtoada = get_pqtoada(3*natm + pt.nmodes)
-      for idx, k_point in enumerate(k_points): 
+      for idx in range(0, len(k_points)): 
         mbdmatrix = get_pt_mbdmatrix(natm, pt, matrix[idx], alpha_0_rsscs, omega_rsscs, gauge, noint, idx)
 
         eigs, phi1_t, psi1_t = diagonalize_pmbdmatrix(np.conj(pqtoada).T @ mbdmatrix @ pqtoada, omegas)
@@ -335,7 +335,7 @@ def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', l
     psi1 = psi1 / len(k_points)
     pt.number, pt.adadaa, pt.X, pt.Y = calc_ptobservables(omegas, phi1, psi1, natm)
 
-    if rpa == True:
+    if rpa is True:
       pt_AT_energy, pt_rpa_orders = get_AT_matrix(coords, alpha_0, C6, R_vdw, beta = beta, pt = pt, lattice=lattice, k_grid=k_grid, noint = noint, shift = shift)
     else:
       pt_AT_energy = 0
