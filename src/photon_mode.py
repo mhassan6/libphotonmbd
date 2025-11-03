@@ -1,22 +1,22 @@
 import numpy as np
 
 class photon_mode:
-  def __init__(self, nmodes, omega, lam, pol_vec, exc = 0., number = 0., qa = 0, pa = 0):
-    self.nmodes = nmodes
-    if nmodes == 1:
-      self.omega = np.array([omega])
-      self.lam = np.array([lam])
-      #self.pol_vec = pol_vec
-      self.pol_vec = np.array([pol_vec]).T
+  def __init__(self, *args, **kwargs): #nmodes, omega, lam, pol_vec):
+    if len(args) == 1 and isinstance(args[0], str):
+      print('Filename:', args[0])
+      self.parse(args[0])
     else:
-      self.omega = omega
-      self.lam = lam
-      self.pol_vec = np.array(pol_vec)
+      self.nmodes = args[0]
+      if self.nmodes == 1:
+        self.omega = np.array([args[1]])
+        self.lam = np.array([args[2]])
+        #self.pol_vec = pol_vec
+        self.pol_vec = np.array([args[3]]).T
+      else:
+        self.omega = args[1]
+        self.lam = args[2]
+        self.pol_vec = np.array(args[3])
 
-    self.exc = exc
-    self.number = number
-    self.qa = qa #photon displacement
-    self.pa = pa #photon momentum
   def parse(filename):
     d = np.loadtxt(filename, skiprows=1, dtype=float)
     e=np.loadtxt(filename,max_rows=1, dtype=int)
