@@ -8,6 +8,9 @@ from atomic_constants import P_Ang
 from pypmbd_lib import xc_pmbd
 from helper_functions import format_time
 
+#There are currently three rundmodes:
+#rsscs, plain, plain2 (plain + dip,gg in dipole_matrix, see 10.1126/science.aae0509)
+
 def pypmbd_parse_json(filename, pt, gauge, noint = False, rpa = True, runmode = 'rsscs', shift = 0.):
 
    start_time = time.time()

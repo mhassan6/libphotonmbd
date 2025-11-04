@@ -277,7 +277,7 @@ def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', l
                                                  beta=beta, lattice=lattice, k_grid=k_grid, noint = noint, \
                                                  runmode = runmode, shift = shift)
 
-    if runmode == 'plain':
+    if runmode == 'plain' or runmode == 'plain2':
       omega_rsscs = 4 / 3 * C6 / alpha_0**2
       alpha_0_rsscs = alpha_0
 

@@ -167,14 +167,17 @@ def mbd_energy_get_matrix2(coords, alpha_0, C6, R_vdw, beta, lattice=None, k_gri
     coords, alpha_0, C6, R_vdw, lattice = map(
         _array, (coords, alpha_0, C6, R_vdw, lattice)
     )
-    if runmode != 'plain':
+    if runmode == 'rsscs':
       alpha_0_rsscs, C6_rsscs, R_vdw_rsscs = screening(
         coords, alpha_0, C6, R_vdw, beta, lattice=lattice, nfreq=15)
       omega_rsscs = 4 / 3 * C6_rsscs / alpha_0_rsscs**2
-    else:
+    elif runmode == 'plain' or runmode == 'plain2':
       alpha_0_rsscs = alpha_0
       omega_rsscs = 4 / 3 * C6 / alpha_0**2
       R_vdw_rsscs = R_vdw
+    else:
+      print('This runmode is not supported!')
+      exit()
 
     pre = np.repeat(omega_rsscs * np.sqrt(alpha_0_rsscs), 3)
     pre2 = np.outer(pre, pre)
@@ -193,11 +196,17 @@ def mbd_energy_get_matrix2(coords, alpha_0, C6, R_vdw, beta, lattice=None, k_gri
     ene = 0.0
     matrix_diag = np.diag(np.repeat(omega_rsscs**2, 3))
 
-    #count = 0
+    if runmode == 'plain2':
+      sigma_array = []
+      for a in alpha_0_rsscs:
+        sigma = (np.sqrt(2 / np.pi) * a / 3) ** (1 / 3)
+        sigma_array.append(sigma)
+
     for k_point in k_points:
-        #print(k_point, count)
-        #count += 1
         if not noint:
+          if runmode == 'plain2':
+            dipole_matrix_mbd = Mgeom.dipole_matrix('dip,gg', sigma=sigma_array, k_point=k_point)
+          else:
             dipole_matrix_mbd = Mgeom.dipole_matrix('fermi,dip', beta=beta, k_point=k_point, R_vdw= R_vdw_rsscs)
 
           #dipole_matrix_mbd = dipole_matrix(
