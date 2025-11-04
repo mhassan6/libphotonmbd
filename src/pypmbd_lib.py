@@ -304,7 +304,7 @@ def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', l
 
           eigs = np.zeros((3*natm + pt.nmodes))
           eigs[:3*natm] = eigs_list[idx]
-          eigs[3*natm:] = pt.omega**2
+          eigs[3*natm:] = [x**2 for x in pt.omega]
  
         pt.exc += np.sum(np.sqrt(eigs)) / 2
 
