@@ -17,22 +17,30 @@ class photon_mode:
         self.lam = args[2]
         self.pol_vec = np.array(args[3])
 
-  def parse(filename):
-    d = np.loadtxt(filename, skiprows=1, dtype=float)
-    e=np.loadtxt(filename,max_rows=1, dtype=int)
-    N=int(e[0])
-    j=int(e[1])
-    if j!=5:
-        print('Each mode requires frequency, wavelength, and X,Y,Z polarization')
-
-    omega= [None]*N
-    lam= [None]*N
-    pol=np.empty((N,3),int)
-    for i in range(0,N):
-        omega[i]=d[i,0]
-        lam[i]=d[i,1]
-        pol[i,0]=d[i,2]
-        pol[i,1]=d[i,3]
-        pol[i,2]=d[i,4]
+  @classmethod
+  def parse(self, filename):
+    e = np.loadtxt(filename,max_rows=1, dtype=int)
+    nmodes = int(e[0])
+    cols = int(e[1])
+    data = np.loadtxt(filename, skiprows=1, dtype=float)
+    if cols != 5:
+      print('Each mode requires frequency, wavelength, and X,Y,Z polarization')
+    omega= [None]*nmodes
+    lam= [None]*nmodes
+    pol=np.empty((nmodes,3),int)
+    for ii in range(0,nmodes):
+      omega[ii]=data[ii,0]
+      lam[ii]=data[ii,1]
+      pol[ii,0]=data[ii,2]
+      pol[ii,1]=data[ii,3]
+      pol[ii,2]=data[ii,4]
     pol_vec=pol.T
-    return photon_mode(N, omega, lam, pol_vec)
+    self.nmodes = nmodes
+    self.omega = np.array(omega)
+    self.lam = np.array(lam)
+    self.pol_vec = np.array(pol)
+
+  def __str__(self):
+    return f"N Photonmodes: {self.nmodes}\n Omega: {self.omega} \n Lambda: {self.lam}"
+
+
