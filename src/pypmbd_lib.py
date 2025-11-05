@@ -192,7 +192,7 @@ def calc_ptobservables(omegas, phi1, psi1, natm):
 
     return ptnumber, adadaambd, X, Y #[-1, -1]
 
-def get_AT_matrix(coords, alpha_0, C6, R_vdw, beta, pt = None, lattice = None, k_grid = None, noint = False, shift = 0.5):
+def get_AT_matrix(coords, alpha_0, C6, R_vdw, beta, pt = None, lattice = None, k_grid = None, noint = False, runmode = 'rsscs', shift = 0.5):
     #see https://github.com/libmbd/libmbd/blob/master/src/mbd_rpa.F90
     nfreq = 15
     natm = alpha_0.shape[0]
@@ -201,12 +201,24 @@ def get_AT_matrix(coords, alpha_0, C6, R_vdw, beta, pt = None, lattice = None, k
 
     freq, freq_w = freq_grid(nfreq)
 
-    alpha_0_rsscs, C6_rsscs, R_vdw_rsscs = screening(
-        coords, alpha_0, C6, R_vdw, beta, lattice = lattice, nfreq=nfreq
-    )
+    if runmode == 'rsscs':
+      alpha_0_rsscs, C6_rsscs, R_vdw_rsscs = screening(
+        coords, alpha_0, C6, R_vdw, beta, lattice=lattice, nfreq=15)
+      omega_rsscs = 4 / 3 * C6_rsscs / alpha_0_rsscs**2
+    elif runmode == 'plain' or runmode == 'plain2':
+      alpha_0_rsscs = alpha_0
+      omega_rsscs = 4 / 3 * C6 / alpha_0**2
+      R_vdw_rsscs = R_vdw
+    else:
+      print('This runmode is not supported!')
+      exit()
 
-    omega = 4 / 3 * C6_rsscs / alpha_0_rsscs**2
-    alpha_dyn = [alpha_0_rsscs / (1 + (u / omega) ** 2) for u in freq]
+#    alpha_0_rsscs, C6_rsscs, R_vdw_rsscs = screening(
+#        coords, alpha_0, C6, R_vdw, beta, lattice = lattice, nfreq=nfreq
+#    )
+#    omega = 4 / 3 * C6_rsscs / alpha_0_rsscs**2
+    
+    alpha_dyn = [alpha_0_rsscs / (1 + (u / omega_rsscs) ** 2) for u in freq]
     
     if lattice is None:
         k_points = [None]
@@ -286,7 +298,7 @@ def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', l
       alpha_0_rsscs = alpha_0
 
     if rpa is True:
-      AT_energy, rpa_orders = get_AT_matrix(coords, alpha_0, C6, R_vdw, beta=beta, lattice=lattice, k_grid=k_grid, noint = noint, shift = shift)
+      AT_energy, rpa_orders = get_AT_matrix(coords, alpha_0, C6, R_vdw, beta=beta, lattice=lattice, k_grid=k_grid, noint = noint, runmode = runmode, shift = shift)
     else:
       AT_energy = 0
       rpa_orders = 0
@@ -340,7 +352,7 @@ def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', l
     pt.number, pt.adadaa, pt.X, pt.Y = calc_ptobservables(omegas, phi1, psi1, natm)
 
     if rpa is True:
-      pt_AT_energy, pt_rpa_orders = get_AT_matrix(coords, alpha_0, C6, R_vdw, beta = beta, pt = pt, lattice=lattice, k_grid=k_grid, noint = noint, shift = shift)
+      pt_AT_energy, pt_rpa_orders = get_AT_matrix(coords, alpha_0, C6, R_vdw, beta = beta, pt = pt, lattice=lattice, k_grid=k_grid, noint = noint, runmode = runmode, shift = shift)
     else:
       pt_AT_energy = 0
       pt_rpa_orders = 0
