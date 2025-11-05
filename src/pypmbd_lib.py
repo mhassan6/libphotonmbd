@@ -1,6 +1,7 @@
 import numpy as np
 
 from pymbd.pymbd import freq_grid, dipole_matrix, get_kpts, screening
+from pymbd.fortran import MBDGeom
 
 from pymbd import from_volumes#, mbd_energy
 from pymbd_mod import mbd_energy_get_matrix2 #mbd_energy_get_matrix, screening_all_freqs, screening_all_freqs_orig
@@ -209,21 +210,24 @@ def get_AT_matrix(coords, alpha_0, C6, R_vdw, beta, pt = None, lattice = None, k
     
     if lattice is None:
         k_points = [None]
+        Mgeom = MBDGeom(coords)
     else:
         assert k_grid is not None
         k_points = get_kpts(lattice, k_grid, shift = shift)
+        Mgeom = MBDGeom(coords, lattice, k_points)
 
     ene = 0.0
     for idx, k_point in enumerate(k_points):
 #    for k_point in k_points:
       if not noint:
-        dipole_matrix_mbd = dipole_matrix(
-                  coords,
-                  'fermi,dip',
-                  R_vdw=R_vdw_rsscs,
-                  beta=beta,
-                  lattice=lattice,
-                  k_point=k_point)
+         dipole_matrix_mbd = Mgeom.dipole_matrix('fermi,dip', beta=beta, k_point=k_point, R_vdw= R_vdw_rsscs)
+#        dipole_matrix_mbd = dipole_matrix(
+#                  coords,
+#                  'fermi,dip',
+#                  R_vdw=R_vdw_rsscs,
+#                  beta=beta,
+#                  lattice=lattice,
+#                  k_point=k_point)
       else:
         dipole_matrix_mbd = np.zeros((3*natm, 3*natm))
 
