@@ -228,11 +228,21 @@ def get_AT_matrix(coords, alpha_0, C6, R_vdw, beta, pt = None, lattice = None, k
         k_points = get_kpts(lattice, k_grid, shift = shift)
         Mgeom = MBDGeom(coords, lattice, k_points)
 
+    if runmode == 'plain2':
+      sigma_array = []
+      for a in alpha_0_rsscs:
+        sigma = (np.sqrt(2 / np.pi) * a / 3) ** (1 / 3)
+        sigma_array.append(sigma)
+
     ene = 0.0
     for idx, k_point in enumerate(k_points):
 #    for k_point in k_points:
       if not noint:
+        if runmode == 'plain2':
+          dipole_matrix_mbd = Mgeom.dipole_matrix('dip,gg', sigma=sigma_array, k_point=k_point)
+        else:
          dipole_matrix_mbd = Mgeom.dipole_matrix('fermi,dip', beta=beta, k_point=k_point, R_vdw= R_vdw_rsscs)
+
 #        dipole_matrix_mbd = dipole_matrix(
 #                  coords,
 #                  'fermi,dip',

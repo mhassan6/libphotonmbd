@@ -224,12 +224,13 @@ def mbd_energy_get_matrix2(coords, alpha_0, C6, R_vdw, beta, lattice=None, k_gri
 
         #eigs = np.linalg.eigvalsh(matrix)
         eigs, eigvecs = np.linalg.eigh(matrix)
-        ene += np.sum(np.sqrt(eigs)) / 2
+        ene += np.sum(np.sqrt(eigs))
 
         matrix_list.append(matrix)
         eigvecs_list.append(eigvecs)
         eigs_list.append(eigs)       
  
-    ene = ene / len(k_points) - 3 * np.sum(omega_rsscs) / 2
+    ene = ene / len(k_points) - 3 * np.sum(omega_rsscs)
+    ene = ene / 2
 
     return ene, alpha_0_rsscs, omega_rsscs, matrix_list, eigvecs_list, eigs_list #, dipole_matrix_mbd
