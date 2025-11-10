@@ -28,11 +28,8 @@ output_array = pypmbd_parse_json(filename, pt, gauge, rpa = True, runmode = 'pla
 vdwene_len = output_array['ene']
 E0 = output_array['E0']
 AT_energy = output_array['AT_energy']
-rpa_orders = output_array['rpa_orders']
 pt_AT_energy = output_array['pt_AT_energy']
-pt_rpa_orders = output_array['pt_rpa_orders']
-pt_number = output_array['pt_number']
-pt_adadaa = output_array['pt_adadaa']
+rpa_orders = output_array['rpa_orders']
 
 print('Gauge', gauge, 'E0', E0, 'vdwene', vdwene_len, 'vdw+pt', pt.exc, 'pt', pt.exc-vdwene_len)
 
@@ -52,6 +49,20 @@ print('rpa_orders', rpa_orders)
 assert rpa_orders[2]  == approx(mbd_orders[1], rel=1e-10)
 assert rpa_orders[3]  == approx(mbd_orders[2], rel=1e-10)
 assert rpa_orders[4]  == approx(mbd_orders[3], rel=1e-10)
+
+
+#Also test plain2
+output_array = pypmbd_parse_json(filename, pt, gauge, rpa = True, runmode = 'plain2')
+
+vdwene_len = output_array['ene']
+E0 = output_array['E0']
+AT_energy = output_array['AT_energy']
+pt_AT_energy = output_array['pt_AT_energy']
+
+print('Gauge', gauge, 'E0', E0, 'vdwene', vdwene_len, 'vdw+pt', pt.exc, 'pt', pt.exc-vdwene_len)
+
+assert vdwene_len == approx(AT_energy, rel=1e-10) #should be rel, but might be related to the ang factor
+assert pt.exc == approx(pt_AT_energy, rel=1e-09) #should be rel, but might be related to the ang factor
 
 print()
 print('12_finite_ar_dimer_mbd_plain_rpa.py: MBD tests passed!')
