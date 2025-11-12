@@ -2,11 +2,9 @@ import json
 import time
 import numpy as np
 
-from vdw.modelmbd import DEFAULT_RSSCS_BETA
-
 from atomic_constants import P_Ang
 from pypmbd_lib import xc_pmbd
-from helper_functions import format_time
+from helper_functions import format_time, DEFAULT_RSSCS_BETA
 
 #There are currently three rundmodes:
 #rsscs, plain, plain2 (plain + dip,gg in dipole_matrix, see 10.1126/science.aae0509)
