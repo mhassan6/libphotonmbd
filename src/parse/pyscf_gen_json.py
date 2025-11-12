@@ -1,7 +1,7 @@
 import numpy as np
 from pyscf import dft, gto, scf
 from atomic_constants import P_Har, P_a_B
-from vdw.modelmbd import DEFAULT_RSSCS_BETA
+from helper_functions import DEFAULT_RSSCS_BETA
 from hirshfeld import HirshfeldAnalysis
 
 element = 'Ar'
