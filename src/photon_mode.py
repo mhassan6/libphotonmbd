@@ -38,7 +38,7 @@ class photon_mode:
     self.nmodes = nmodes
     self.omega = np.array(omega)
     self.lam = np.array(lam)
-    self.pol_vec = np.array(pol)
+    self.pol_vec = np.array(pol_vec)
 
   def __str__(self):
     return f"N Photonmodes: {self.nmodes}\n Omega: {self.omega} \n Lambda: {self.lam}"
