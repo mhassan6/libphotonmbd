@@ -190,7 +190,12 @@ def calc_ptobservables(omegas, phi1, psi1, natm):
     ptnumber = np.sum(np.diag(ptnumber_matrix[3*natm:, 3*natm:]))
     adadaambd=(Y.T@ X)[-1,-1]*(X.T @ Y)[-1,-1]+2*(Y.T @ Y)[-1,-1]**2 #+(Y.T @ Y)[-1,-1]* (Y @ Y)[-1,-1]
 
-    return ptnumber, adadaambd, X, Y #[-1, -1]
+    YYt = Y.T @ Y
+    XtY = X.T @ Y
+    xx = 1/(omegas[-1])*(YYt[-1,-1]-XtY[-1,-1]+1/2) #careful assumes only one photon mode
+    pp = (omegas[-1])*(YYt[-1,-1]+XtY[-1,-1]+1/2)   #careful assumes only one photon mode
+
+    return ptnumber, adadaambd, X, Y, xx, pp #[-1, -1]
 
 def get_AT_matrix(coords, alpha_0, C6, R_vdw, beta, pt = None, lattice = None, k_grid = None, noint = False, runmode = 'rsscs', shift = 0.5):
     #see https://github.com/libmbd/libmbd/blob/master/src/mbd_rpa.F90
@@ -359,7 +364,7 @@ def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', l
     pt.exc = pt.exc / len(k_points) -3*np.sum(omega_rsscs) / 2 - np.sum(pt.omega) / 2
     phi1 = phi1 / len(k_points)
     psi1 = psi1 / len(k_points)
-    pt.number, pt.adadaa, pt.X, pt.Y = calc_ptobservables(omegas, phi1, psi1, natm)
+    pt.number, pt.adadaa, pt.X, pt.Y, pt.xx, pt.pp = calc_ptobservables(omegas, phi1, psi1, natm)
 
     if rpa is True:
       pt_AT_energy, pt_rpa_orders = get_AT_matrix(coords, alpha_0, C6, R_vdw, beta = beta, pt = pt, lattice=lattice, k_grid=k_grid, noint = noint, runmode = runmode, shift = shift)
@@ -382,7 +387,9 @@ def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', l
        'pt_number' : pt.number,
        'pt_adadaa' : pt.adadaa,
        'pt_X' : pt.X,
-       'pt_Y' : pt.Y
+       'pt_Y' : pt.Y,
+       'pt_xx' : pt.xx,
+       'pt_pp' : pt.pp
     }
 
     return output_array

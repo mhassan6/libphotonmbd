@@ -21,6 +21,8 @@ pt_AT_energy = output_array['pt_AT_energy']
 pt_rpa_orders = output_array['pt_rpa_orders']
 pt_number = output_array['pt_number']
 pt_adadaa = output_array['pt_adadaa']
+pt_xx = output_array['pt_xx']
+pt_pp = output_array['pt_pp']
 
 print('Gauge', gauge, 'E0', E0, 'vdwene', vdwene_len, 'vdw+pt', pt.exc, 'pt', pt.exc-vdwene_len)
 
@@ -45,6 +47,11 @@ assert pt_adadaa == approx(0.001991878451505221, abs=1e-10)
 assert AT_energy == approx(-0.00024635007299611544, abs=1e-10)
 assert pt_AT_energy == approx(0.02928918951142423, abs=1e-10)
 
+print('pt_number', 1/2*(pt.omega*pt_xx+1/(pt.omega)*pt_pp)-1/2, pt_number)
+assert pt_number == approx(np.real(1/2*(pt.omega*pt_xx+1/(pt.omega)*pt_pp)-1/2), abs = 1e-10)
+
+
+
 print()
 print('Length gauge tests passed!')
 print()
@@ -61,6 +68,8 @@ pt_AT_energy = output_array['pt_AT_energy']
 pt_rpa_orders = output_array['pt_rpa_orders']
 pt_number = output_array['pt_number']
 pt_adadaa = output_array['pt_adadaa']
+pt_xx = output_array['pt_xx']
+pt_pp = output_array['pt_pp']
 
 print('Gauge', gauge, 'E0', E0, 'vdwene', vdwene_len, 'vdw+pt', pt.exc, 'pt', pt.exc-vdwene_len)
 
@@ -82,6 +91,10 @@ assert pt_adadaa == approx(0.04536898212856857, abs=1e-10)
 
 assert AT_energy == approx(-0.00024635007299611544, abs=1e-10)
 assert pt_AT_energy == approx(0.02928918951142423, abs=1e-10)
+
+print('pt_number', 1/2*(pt.omega*pt_xx+1/(pt.omega)*pt_pp)-1/2, pt_number)
+assert pt_number == approx(np.real(1/2*(pt.omega*pt_xx+1/(pt.omega)*pt_pp)-1/2), abs = 1e-10)
+
 
 
 print()
