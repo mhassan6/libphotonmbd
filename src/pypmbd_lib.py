@@ -272,7 +272,7 @@ def get_AT_matrix(coords, alpha_0, C6, R_vdw, beta, pt = None, lattice = None, k
             for jj in range(0, natm):
               for yy in range(0, 3):
                 res = 0  
-                if pt is not None and idx == 0:
+                if pt is not None and idx == 0: #careful! assumes that the first kpoint is the gamma point and couples to the first kpoint
                   for imodes in range(0, pt.nmodes):
                     res += pt.lam[imodes]**2*pt.pol_vec[xx,imodes]*pt.pol_vec[yy,imodes]*freq[ifreq]**2/(freq[ifreq]**2 + pt.omega[imodes]**2)
                 AT[3*ii+xx,3*jj+yy] = np.sqrt(alpha_dyn[ifreq][ii]*alpha_dyn[ifreq][jj]) \
@@ -325,7 +325,10 @@ def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', l
 
     if gauge == 'length':
       for idx in range(0, len(k_points)):
-        if idx == 0:
+        if idx == 0:  #careful! assumes that the first kpoint is the gamma point and couples to the first kpoint
+          if len(k_points) > 1:
+            print('\nxxxxxx\ncareful! current implementation assumes that the first kpoint is the gamma point') 
+            print('couples to the first kpoint. double check if the kpoint grid is right\nxxxxxx\n\n')
           mbdmatrix = get_pt_mbdmatrix(natm, pt, matrix[idx], alpha_0_rsscs, omega_rsscs, gauge, noint, idx)
           eigs, eigvecs = np.linalg.eigh(mbdmatrix)
         else:
