@@ -123,8 +123,8 @@ rho = evec[:,0] @ evec[:,0].T
 rho = np.array(rho)
 drho = rho.reshape([20,20,20,20])
 #print(drho.shape)
-drho =  np.einsum('ijkl->ik', drho)
-#drho =  np.einsum('jiki->jk', drho)
+#drho =  np.einsum('ijkl->ik', drho)
+drho =  np.einsum('jiki->jk', drho)
 
 #print(drho.shape)
 
