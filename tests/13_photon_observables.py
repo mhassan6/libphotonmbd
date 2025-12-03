@@ -138,9 +138,10 @@ for ii in range(len(eigs)):
     S1 += -eigs[ii]*np.log(eigs[ii])
 
 nu = 2*np.sqrt(pt_xx*pt_pp)
-S2 = (nu + 1) / 2 * np.log((nu + 1 / 2)) -  (nu - 1) / 2 * np.log((nu - 1 / 2))
+S2 = (nu + 1) / 2 * np.log((nu + 1) / 2) -  (nu - 1) / 2 * np.log((nu - 1) / 2)
 
-print('entropy', S1, S2 )
+
+print('entropy', S1, S2)
 
 print('')
 
