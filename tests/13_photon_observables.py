@@ -106,6 +106,9 @@ print('photon adadaa', pt_adadaa, evec[:,0].T @ create2 @ create2 @ destroy2 @ d
 
 print('<x^2>', pt_xx, evec[:,0].T @ q2 @ q2 @ evec[:,0])
 print('<p^2>', pt_pp, evec[:,0].T @ p2 @ p2 @ evec[:,0])
+print('<x*p>', evec[:,0].T @ p2 @ q2 @ evec[:,0])
+print('<p*x>', evec[:,0].T @ q2 @ p2 @ evec[:,0])
+
 
 assert pt.exc-vdwene_len == approx(eigs[0] - eigs_noint[0], abs=1e-10)
 assert pt_number == approx(evec[:,0].T @ create2 @ destroy2 @ evec[:,0], abs=1e-10)
