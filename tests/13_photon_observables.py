@@ -78,7 +78,7 @@ def build_harmonic_oscillator_operators(N_pt):
 
   return unit, sp.csr_matrix(create), sp.csr_matrix(destroy)
 
-unit, create, destroy = build_harmonic_oscillator_operators(40)
+unit, create, destroy = build_harmonic_oscillator_operators(20)
 
 create1 = sp.kron(unit, create)
 create2 = sp.kron(create, unit)
@@ -112,6 +112,32 @@ assert pt_number == approx(evec[:,0].T @ create2 @ destroy2 @ evec[:,0], abs=1e-
 assert pt_adadaa == approx(evec[:,0].T @ create2 @ create2 @ destroy2 @ destroy2 @ evec[:,0], abs=1e-10)
 assert pt_xx == approx(evec[:,0].T @ q2 @ q2 @ evec[:,0], abs=1e-10)
 assert pt_pp == approx(evec[:,0].T @ p2 @ p2 @ evec[:,0], abs=1e-10)
+
+print('\nCheck for entropy \n')
+rho = evec[:,0] @ evec[:,0].T
+
+#print(rho.shape)
+rho = np.array(rho)
+drho = rho.reshape([20,20,20,20])
+#print(drho.shape)
+drho =  np.einsum('ijkl->ik', drho)
+#drho =  np.einsum('jiki->jk', drho)
+
+#print(drho.shape)
+
+eigs, evec = np.linalg.eigh(drho)
+
+#print(eigs)
+
+S1 = 0
+for ii in range(len(eigs)):
+  if abs(eigs[ii]) > 10**(-10):
+    S1 += -eigs[ii]*np.log(eigs[ii])
+
+nu = 2*np.sqrt(pt_xx*pt_pp)
+S2 = (nu + 1) / 2 * np.log((nu + 1 / 2)) -  (nu - 1) / 2 * np.log((nu - 1 / 2))
+
+print('entropy', S1, S2 )
 
 print('')
 
