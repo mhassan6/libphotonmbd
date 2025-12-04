@@ -1,0 +1,21 @@
+{
+  "atomic_species": [
+    "Ar"
+  ],
+  "atomic_positions": [
+    [
+      0.0,
+      0.0,
+      0.0
+    ]
+  ],
+  "lattice": 0,
+  "kpoints": 0,
+  "total_energy": 0,
+  "ratio": [
+    1
+  ],
+  "mbd_energy": 0,
+  "xc": "pbe",
+  "code": "dummy"
+}

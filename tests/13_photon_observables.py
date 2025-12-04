@@ -109,13 +109,6 @@ print('<p^2>', pt_pp, evec[:,0].T @ p2 @ p2 @ evec[:,0])
 print('<x*p>', evec[:,0].T @ p2 @ q2 @ evec[:,0])
 print('<p*x>', evec[:,0].T @ q2 @ p2 @ evec[:,0])
 
-
-assert pt.exc-vdwene_len == approx(eigs[0] - eigs_noint[0], abs=1e-10)
-assert pt_number == approx(evec[:,0].T @ create2 @ destroy2 @ evec[:,0], abs=1e-10)
-assert pt_adadaa == approx(evec[:,0].T @ create2 @ create2 @ destroy2 @ destroy2 @ evec[:,0], abs=1e-10)
-assert pt_xx == approx(evec[:,0].T @ q2 @ q2 @ evec[:,0], abs=1e-10)
-assert pt_pp == approx(evec[:,0].T @ p2 @ p2 @ evec[:,0], abs=1e-10)
-
 print('\nCheck for entropy \n')
 rho = evec[:,0] @ evec[:,0].T
 
@@ -128,22 +121,28 @@ drho =  np.einsum('jiki->jk', drho)
 
 #print(drho.shape)
 
-eigs, evec = np.linalg.eigh(drho)
+eigs_rho, _ = np.linalg.eigh(drho)
 
 #print(eigs)
 
 S1 = 0
-for ii in range(len(eigs)):
-  if abs(eigs[ii]) > 10**(-10):
-    S1 += -eigs[ii]*np.log(eigs[ii])
+for ii in range(len(eigs_rho)):
+  if (eigs_rho[ii]) > 10**(-14):
+    S1 += -eigs_rho[ii]*np.log(eigs_rho[ii])
 
 nu = 2*np.sqrt(pt_xx*pt_pp)
 S2 = (nu + 1) / 2 * np.log((nu + 1) / 2) -  (nu - 1) / 2 * np.log((nu - 1) / 2)
 
 
 print('entropy', S1, S2)
-
 print('')
+
+assert pt.exc-vdwene_len == approx(eigs[0] - eigs_noint[0], abs=1e-10)
+assert pt_number == approx(evec[:,0].T @ create2 @ destroy2 @ evec[:,0], abs=1e-10)
+assert pt_adadaa == approx(evec[:,0].T @ create2 @ create2 @ destroy2 @ destroy2 @ evec[:,0], abs=1e-10)
+assert pt_xx == approx(evec[:,0].T @ q2 @ q2 @ evec[:,0], abs=1e-10)
+assert pt_pp == approx(evec[:,0].T @ p2 @ p2 @ evec[:,0], abs=1e-10)
+assert S1 == approx(S2, abs = 1e-10)
 
 print('13_photon_observables.py: Photon observables in velocity gauge tests passed!')
 

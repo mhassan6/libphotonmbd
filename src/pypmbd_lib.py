@@ -188,6 +188,7 @@ def calc_ptobservables(omegas, phi1, psi1, natm):
 
     ptnumber_matrix = Y.T @ Y
     ptnumber = np.sum(np.diag(ptnumber_matrix[3*natm:, 3*natm:]))
+    #!!adadaa form below only works correctly if a single mode is used!!
     adadaambd=(Y.T@ X)[-1,-1]*(X.T @ Y)[-1,-1]+2*(Y.T @ Y)[-1,-1]**2 #+(Y.T @ Y)[-1,-1]* (Y @ Y)[-1,-1]
 
     YYt = Y.T @ Y
