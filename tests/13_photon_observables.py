@@ -109,6 +109,10 @@ print('<p^2>', pt_pp, evec[:,0].T @ p2 @ p2 @ evec[:,0])
 print('<x*p>', evec[:,0].T @ p2 @ q2 @ evec[:,0])
 print('<p*x>', evec[:,0].T @ q2 @ p2 @ evec[:,0])
 
+print('Check for higher order correlations')
+print('x**4', evec[:,0].T @ q2 @ q2 @ q2 @ q2 @ evec[:,0])
+print('Gaussian: 3* <x**2>**2', 3*(evec[:,0].T @ q2 @ q2 @ evec[:,0])**2)
+
 print('\nCheck for entropy \n')
 rho = evec[:,0] @ evec[:,0].T
 
