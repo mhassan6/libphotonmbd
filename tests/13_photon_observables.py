@@ -148,7 +148,11 @@ assert pt_xx == approx(evec[:,0].T @ q2 @ q2 @ evec[:,0], abs=1e-10)
 assert pt_pp == approx(evec[:,0].T @ p2 @ p2 @ evec[:,0], abs=1e-10)
 assert S1 == approx(S2, abs = 1e-10)
 
+log_val = (pt_xx * pt.omega) / (pt_pp / pt.omega)
+r = 1/4 * np.log(log_val)
+
+print('sqeezing: log_val', log_val, 'r', r)
+print('')
+
 print('13_photon_observables.py: Photon observables in velocity gauge tests passed!')
-
-
 
