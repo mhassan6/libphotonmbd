@@ -122,27 +122,29 @@ def diagonalize_pmbdmatrix(matrix, om):
   #K = np.sqrt(Lval)*K
 
   #Eq. 5.8 (second line)
-  eval1, evec1 = np.linalg.eig(K.T.conj() @ (A+B) @ K)
+  lambda_square, chi = np.linalg.eig(K.T.conj() @ (A+B) @ K)
 
-  phi1 = 0j*evec1
-  psi1 = 0j*evec1
-  uvec = 0j*evec1
-  vvec = 0j*evec1
-  evec2 = 0j*evec1
+  phi1 = 0j*chi
+  psi1 = 0j*chi
+  uvec = 0j*chi
+  vvec = 0j*chi
+  evec2 = 0j*chi
 
   for ii in range(0, nmodes):
-    evec2[:,ii] = evec1[:,ii] / (eval1[ii])**(1/4)
-    phi1[:,ii] = K @ evec2[:,ii] #Eq. 5.8
-    psi1[:,ii] = (A + B) @ phi1[:,ii] / np.sqrt(eval1[ii]) #Eq. 5.7b
+    phi1[:,ii] = K @ chi[:,ii] / (lambda_square[ii])**(1/4) #Eq. 5.8 + normalization
+    psi1[:,ii] = (A + B) @ phi1[:,ii] / np.sqrt(lambda_square[ii]) #Eq. 5.7b
+    #Eq. 5.6b
     uvec[:,ii] = 1/2*(phi1[:,ii] + psi1[:,ii])
     vvec[:,ii] = 1/2*(phi1[:,ii] - psi1[:,ii])
 
+  #Eq. 5.2
   Tm = 1.0j*np.zeros((2*nmodes,2*nmodes))
   Tm[:nmodes,:nmodes] = uvec
   Tm[nmodes:,:nmodes] = vvec
   Tm[:nmodes,nmodes:] = vvec
   Tm[nmodes:,nmodes:] = uvec
 
+  #Eq 5.3
   evals = np.real(np.diag(Tm.T @ D @ Tm))
 
   #X_bo = 1/2*(phi1.T @ np.diag(om**(-0.5)) + psi1.T @ np.diag(om**(0.5)))
