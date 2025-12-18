@@ -106,47 +106,47 @@ def get_pqtoada(nmodes):
 
 def diagonalize_pmbdmatrix(matrix, om):
   #J.H.P Colpa, Physica 93A 327-353 (1978)
+  #We follow the section 5
 
   nmodes = int(len(matrix) / 2)
-  #print('nmodes', nmodes)
 
+  #Eq. 5.1:
   A = np.real(matrix[:nmodes,:nmodes])
   B = np.real(matrix[nmodes:,:nmodes])
-  D = np.real(matrix)
+  D = np.real(matrix) 
 
-  L = np.linalg.cholesky(A-B)
+  #A - B = K K^dagger and Eq. 5.8
+  K = np.linalg.cholesky(A-B)
   #alternatively below via diagonalization
-  #Lval, L = np.linalg.eig(A-B)
-  #L = np.sqrt(Lval)*L
+  #Kval, K = np.linalg.eig(A-B)
+  #K = np.sqrt(Lval)*K
 
-  # A - B = K K^dagger
-  eval3, evec3 = np.linalg.eig(L.T.conj() @ (A+B) @ L)
-  phi1 = 0j*evec3
-  psi1 = 0j*evec3
-  uvec = 0j*evec3
-  vvec = 0j*evec3
-  evec4 = 0j*evec3
-  X_bo = 0j*evec3
-  Y_bo = 0j*evec3
+  #Eq. 5.8 (second line)
+  eval1, evec1 = np.linalg.eig(K.T.conj() @ (A+B) @ K)
+
+  phi1 = 0j*evec1
+  psi1 = 0j*evec1
+  uvec = 0j*evec1
+  vvec = 0j*evec1
+  evec2 = 0j*evec1
 
   for ii in range(0, nmodes):
-    evec4[:,ii] = evec3[:,ii] / (eval3[ii])**(1/4)
-    phi1[:,ii] = L @ evec4[:,ii]
-    psi1[:,ii] = (A + B) @ phi1[:,ii] / np.sqrt(eval3[ii])
+    evec2[:,ii] = evec1[:,ii] / (eval1[ii])**(1/4)
+    phi1[:,ii] = K @ evec2[:,ii] #Eq. 5.8
+    psi1[:,ii] = (A + B) @ phi1[:,ii] / np.sqrt(eval1[ii]) #Eq. 5.7b
     uvec[:,ii] = 1/2*(phi1[:,ii] + psi1[:,ii])
     vvec[:,ii] = 1/2*(phi1[:,ii] - psi1[:,ii])
 
+  Tm = 1.0j*np.zeros((2*nmodes,2*nmodes))
+  Tm[:nmodes,:nmodes] = uvec
+  Tm[nmodes:,:nmodes] = vvec
+  Tm[:nmodes,nmodes:] = vvec
+  Tm[nmodes:,nmodes:] = uvec
 
-  Tm_new = 1.0j*np.zeros((2*nmodes,2*nmodes))
-  Tm_new[:nmodes,:nmodes] = uvec
-  Tm_new[nmodes:,:nmodes] = vvec
-  Tm_new[:nmodes,nmodes:] = vvec
-  Tm_new[nmodes:,nmodes:] = uvec
+  evals = np.real(np.diag(Tm.T @ D @ Tm))
 
-  evals = np.real(np.diag(Tm_new.T @ D @ Tm_new))
-
-  X_bo = 1/2*(phi1.T @ np.diag(om**(-0.5)) + psi1.T @ np.diag(om**(0.5)))
-  Y_bo = 1/2*(phi1.T @ np.diag(om**(-0.5)) - psi1.T @ np.diag(om**(0.5)))
+  #X_bo = 1/2*(phi1.T @ np.diag(om**(-0.5)) + psi1.T @ np.diag(om**(0.5)))
+  #Y_bo = 1/2*(phi1.T @ np.diag(om**(-0.5)) - psi1.T @ np.diag(om**(0.5)))
 
   return evals, np.real(phi1.T), np.real(psi1.T)
 

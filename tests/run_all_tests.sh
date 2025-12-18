@@ -12,3 +12,5 @@ python3 09_finite_ar_dimer_mbd_plain.py | tail -1
 python3 10_periodic_ar_mbd_plain.py | tail -1
 python3 11_multi_photonmodes.py | tail -1
 python3 12_finite_ar_dimer_mbd_plain_rpa.py | tail -1
+python3 13_photon_observables.py | tail -1
+
