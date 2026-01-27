@@ -395,7 +395,8 @@ def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', l
        'pt_X' : pt.X,
        'pt_Y' : pt.Y,
        'pt_xx' : pt.xx,
-       'pt_pp' : pt.pp
+       'pt_pp' : pt.pp,
+       'kpoints' : k_points
     }
 
     return output_array

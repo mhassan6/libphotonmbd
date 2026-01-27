@@ -167,6 +167,7 @@ def mbd_energy_get_matrix2(coords, alpha_0, C6, R_vdw, beta, lattice=None, k_gri
     coords, alpha_0, C6, R_vdw, lattice = map(
         _array, (coords, alpha_0, C6, R_vdw, lattice)
     )
+    natm = len(coords)
     if runmode == 'rsscs':
       alpha_0_rsscs, C6_rsscs, R_vdw_rsscs = screening(
         coords, alpha_0, C6, R_vdw, beta, lattice=lattice, nfreq=15)
