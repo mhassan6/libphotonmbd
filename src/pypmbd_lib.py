@@ -122,7 +122,7 @@ def diagonalize_pmbdmatrix(matrix, om):
   #K = np.sqrt(Lval)*K
 
   #Eq. 5.8 (second line)
-  lambda_square, chi = np.linalg.eig(K.T.conj() @ (A+B) @ K)
+  lambda_square, chi = np.linalg.eigh(K.T.conj() @ (A+B) @ K)
 
   phi1 = 0j*chi
   psi1 = 0j*chi
