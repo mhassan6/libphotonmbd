@@ -9,7 +9,7 @@ from helper_functions import format_time, DEFAULT_RSSCS_BETA
 #There are currently three rundmodes:
 #rsscs, plain, plain2 (plain + dip,gg in dipole_matrix, see 10.1126/science.aae0509)
 
-def pypmbd_parse_json(filename, pt, gauge, noint = False, rpa = True, runmode = 'rsscs', shift = 0.):
+def pypmbd_parse_json(filename, pt, gauge, noint = False, rpa = True, runmode = 'rsscs', shift = 0., custom_kpts = None):
 
    start_time = time.time()
 
@@ -35,6 +35,8 @@ def pypmbd_parse_json(filename, pt, gauge, noint = False, rpa = True, runmode = 
    kpoints = data['kpoints']
    if kpoints == 0:
       kpoints = None
+   elif custom_kpts is not None:
+      kpoints = custom_kpts
    E0 = data['total_energy']
    xc_fun = data['xc']
 
