@@ -383,6 +383,16 @@ def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', l
     print('ptexc per atom: ', pt.exc/natm)
     print('pt_AT_energy per atom: ', pt_AT_energy/natm)
 
+    if None not in k_points:
+        rpa_orders = 0
+        pt_rpa_orders = 0
+        pt.number = 0
+        pt.adadaa = 0
+        pt.X = 0
+        pt.Y = 0
+        pt.xx = 0
+        pt.pp = 0
+        
     output_array = {
        'ene' : ene,
        'ptexc' : pt.exc,
@@ -396,7 +406,7 @@ def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', l
        'pt_Y' : pt.Y,
        'pt_xx' : pt.xx,
        'pt_pp' : pt.pp,
-       'kpoints' : k_points
+       'kpoints' : k_points.tolist()
     }
 
     return output_array
