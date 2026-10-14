@@ -294,7 +294,7 @@ def get_AT_matrix(coords, alpha_0, C6, R_vdw, beta, pt = None, lattice = None, k
       
     return ene, rpa_orders
 
-def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', lattice=None, k_grid=None, noint = False, rpa = True, runmode = 'rsscs', shift=0.5): #gauge = length, velocity
+def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', lattice=None, k_grid=None, noint = False, rpa = True, runmode = 'rsscs', shift=0.5, save_kpts = False): #gauge = length, velocity
 
     natm = len(elements)
     alpha_0, C6, R_vdw = from_volumes(elements, ratio)
@@ -392,7 +392,12 @@ def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', l
         pt.Y = 0
         pt.xx = 0
         pt.pp = 0
-        
+
+    if save_kpts:
+        kpts_to_json = k_points.tolist()
+    else:
+        kpts_to_json = k_grid
+
     output_array = {
        'ene' : ene,
        'ptexc' : pt.exc,
@@ -406,7 +411,7 @@ def xc_pmbd(coords, elements, ratio, pt = None, beta = 0.84, gauge = 'length', l
        'pt_Y' : pt.Y,
        'pt_xx' : pt.xx,
        'pt_pp' : pt.pp,
-       'kpoints' : k_points.tolist()
+       'kpoints' : kpts_to_json
     }
 
     return output_array
